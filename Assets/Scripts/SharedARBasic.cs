@@ -14,9 +14,6 @@ using Niantic.ARDK.AR.Awareness.Semantics;
 
 public class SharedARBasic : MonoBehaviour
 {
-    // Textbox to hold the session id
-    [SerializeField] private TMP_InputField sessionID;
-
     // Prefab that indicates the players
     [SerializeField] private GameObject playerIndicator;
 

@@ -10,6 +10,7 @@ public class ThrowObject : MonoBehaviour
     public GameObject throwObjectPrefab;
     public float throwForce;
     public Camera cam;
+    public float timeToDestroy = 10;
 
     Touch touch;
     Vector3 throwPosition;
@@ -36,7 +37,7 @@ public class ThrowObject : MonoBehaviour
 
             throwObject.GetComponent<Rigidbody>().AddForce(cam.transform.forward * throwForce);
 
-            Destroy(throwObject, 10);
+            Destroy(throwObject, timeToDestroy);
         }
 
     }

@@ -26,4 +26,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/05-AR Mesh.unity
     guid: d753945fcf22c9d4ab0887e20eae03d1
+  - enabled: 1
+    path: Assets/Scenes/06-SharedAR Basic.unity
+    guid: 4dca502ae74dd71478933559e78e3ad0
   m_configObjects: {}

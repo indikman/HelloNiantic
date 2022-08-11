@@ -21,11 +21,6 @@ public class ARMesh : MonoBehaviour
         MeshMaterialManager.Instance.AddMesh(this);
     }
 
-    private void OnDisable()
-    {
-        MeshMaterialManager.Instance.RemoveMesh(this);
-    }
-
     private void OnDestroy()
     {
         MeshMaterialManager.Instance.RemoveMesh(this);

@@ -25,6 +25,9 @@ public class PaintBall : MonoBehaviour
                 // Instantiate explode particle and Play sound (instaltiate a sound object)
                 Instantiate(explodeParticle, transform.position, Quaternion.identity);
 
+                //Add score
+                GameNetworkManager.Instance.AddScore();
+
                 // Delete the paintball from all peers
                 paintBallGenerator.DestroyObjectFromAllPeers(GetComponent<NetworkedUnityObject>(), .5f);
 

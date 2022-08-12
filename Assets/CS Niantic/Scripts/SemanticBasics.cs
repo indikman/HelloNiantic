@@ -31,12 +31,13 @@ public class SemanticBasics : MonoBehaviour
 
     void Start()
     {
+        // Subcsribe to the semantic buffer
         semanticManager.SemanticBufferUpdated += OnSemanticBufferUpdated;
     }
 
     private void OnSemanticBufferUpdated(ContextAwarenessStreamUpdatedArgs<ISemanticBuffer> args)
     {
-        // get the current awareness buffer
+        // get the current awareness buffer and set that value
         currentBuffer = args.Sender.AwarenessBuffer;
     }
 
@@ -62,6 +63,7 @@ public class SemanticBasics : MonoBehaviour
             int x = (int)touch.position.x;
             int y = (int)touch.position.y;
 
+            // You have to send the coordintes to get the available channels of that pixel
             int[] channelsInPixel = semanticManager.SemanticBufferProcessor.GetChannelIndicesAt(x, y);
 
             foreach (var item in channelsInPixel)

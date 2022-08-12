@@ -1,11 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-using Niantic.ARDK.Utilities.Input.Legacy;
-using Niantic.ARDK.Networking;
-using Niantic.ARDK.AR.Networking;
-using Niantic.ARDK.Extensions;
 using Niantic.ARDK.Networking.HLAPI.Object.Unity;
 using Niantic.ARDK.Networking.HLAPI.Authority;
 

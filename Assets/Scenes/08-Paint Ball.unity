@@ -713,12 +713,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1720863759}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 921b318c311c9064ca6ff029c4be0058, type: 3}
+  m_Script: {fileID: 11500000, guid: 277771724dab1b94f853845b4b86eb3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   arNetwork: {fileID: 1720863760}
-  placementObjectPrefab: {fileID: 8252247920310363472, guid: 7ce561b755a0ed14598eeea5bfa72834, type: 3}
+  throwObjectPrefab: {fileID: 8282496437600610, guid: 783424af506585f4fa8cb79e5a1704cf, type: 3}
+  throwForce: 350
   cam: {fileID: 1818019774}
+  timeToDestroy: 3
 --- !u!1 &1774897013
 GameObject:
   m_ObjectHideFlags: 0
@@ -1133,9 +1135,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1720863764}
+      - m_Target: {fileID: 1720863759}
         m_TargetAssemblyTypeName: PlaceObjectNetwork, Assembly-CSharp
-        m_MethodName: PlaceObject
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

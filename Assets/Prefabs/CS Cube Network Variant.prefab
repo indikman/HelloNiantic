@@ -91,7 +91,7 @@ MonoBehaviour:
   _destructionAuthorizedPeers: -1
   _destroyIfDestroyerLeaves: 0
   _auth: {fileID: 3353327856094840128}
-  _defaultBehaviour: {fileID: 0}
+  _defaultBehaviour: {fileID: 4730506995083318917}
   _behaviours:
   - {fileID: 3353327856094840128}
   - {fileID: 4730506995083318917}

@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Niantic.ARDK.Utilities.Input.Legacy;
-using Niantic.ARDK.Networking;
-using Niantic.ARDK.AR.Networking;
-using Niantic.ARDK.Extensions;
 using Niantic.ARDK.Networking.HLAPI.Object.Unity;
+using Niantic.ARDK.Networking.HLAPI.Authority;
 
 
 public class ThrowObjectNetwork : MonoBehaviour
 {
+
+    [SerializeField] private SharedARBasic arNetwork;
+
     // Object to instantiate over network
     [SerializeField] private NetworkedUnityObject throwObjectPrefab;
 
@@ -21,14 +22,14 @@ public class ThrowObjectNetwork : MonoBehaviour
 
     Touch touch;
     Vector3 throwPosition;
-    NetworkedUnityObject throwObject;
+    GameObject throwObject;
 
     
     
-    private NetworkedUnityObject SpawnObjectForAllPeers()
+    private NetworkedUnityObject SpawnObjectForAllPeers(Vector3 pos, Quaternion rot)
     {
         // This will spawn the object not just in the host, but also in other peers and return it
-        return throwObjectPrefab.NetworkSpawn();
+        return throwObjectPrefab.NetworkSpawn(arNetwork.networking, pos, rot, Role.Authority);
     }
 
     
@@ -54,18 +55,16 @@ public class ThrowObjectNetwork : MonoBehaviour
 
         if(touch.phase == TouchPhase.Began)
         {
-            throwPosition = cam.transform.position + cam.transform.forward;
+            throwPosition = cam.transform.position + cam.transform.forward * 0.2f;
 
             // Get the touch input and instantiate an object
 
-            throwObject = SpawnObjectForAllPeers();
-            throwObject.transform.position = throwPosition;
-            throwObject.transform.rotation = Quaternion.identity;
+            throwObject = SpawnObjectForAllPeers(throwPosition, Quaternion.identity).gameObject;
 
             throwObject.GetComponent<Rigidbody>().AddForce(cam.transform.forward * throwForce);
 
             // Destroy the object after a delay from the network
-            DestroyObjectFromAllPeers(throwObject, timeToDestroy);
+            DestroyObjectFromAllPeers(throwObject.GetComponent<NetworkedUnityObject>(), timeToDestroy);
         }
 
     }

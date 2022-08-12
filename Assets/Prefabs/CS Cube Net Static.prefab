@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8252247920310363465}
   - component: {fileID: 8252247920310363472}
   - component: {fileID: 8252247920310363478}
+  - component: {fileID: 4365416278278449321}
   m_Layer: 0
   m_Name: CS Cube Net Static
   m_TagString: Untagged
@@ -102,9 +103,10 @@ MonoBehaviour:
   _destructionAuthorizedPeers: 2
   _destroyIfDestroyerLeaves: 0
   _auth: {fileID: 8252247920310363478}
-  _defaultBehaviour: {fileID: 0}
+  _defaultBehaviour: {fileID: 4365416278278449321}
   _behaviours:
   - {fileID: 8252247920310363478}
+  - {fileID: 4365416278278449321}
 --- !u!114 &8252247920310363478
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120,3 +122,17 @@ MonoBehaviour:
   _owner: {fileID: 8252247920310363472}
   _ownedByHost: 0
   _observeByDefault: 1
+--- !u!114 &4365416278278449321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8252247920310363463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed3d79a91d614637b36cb1ab7eb7a887, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _owner: {fileID: 8252247920310363472}
+  _replicatedPieces: 3

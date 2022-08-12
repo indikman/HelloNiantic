@@ -52,7 +52,6 @@ public class SharedARBasic : MonoBehaviour
     private void OnConnected(ConnectedArgs args)
     {
         self = args.Self;
-
     }
 
     private void OnPeerStateReceived(PeerStateReceivedArgs args)
@@ -77,6 +76,7 @@ public class SharedARBasic : MonoBehaviour
         {
             // position of the indicator will be updated
             poseIndicator.transform.position = args.Pose.GetPosition() + new Vector3(0,0.1f,0.1f);
+            poseIndicator.transform.rotation = args.Pose.rotation;
         }
     }
 

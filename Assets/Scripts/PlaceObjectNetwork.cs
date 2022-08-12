@@ -29,7 +29,7 @@ public class PlaceObjectNetwork : MonoBehaviour
 
     public void PlaceObject()
     {
-        placedPosition = cam.transform.position + cam.transform.forward * 0.1f;
+        placedPosition = cam.transform.position + cam.transform.forward * 0.6f;
 
         // Get the touch input and instantiate an object
         SpawnObjectForAllPeers(placedPosition, cam.transform.rotation);

@@ -6,33 +6,33 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/00-A_Menu.unity
+    path: Assets/CS Niantic/Scenes/00-A_Menu.unity
     guid: 59b81bfd01c7dad4fb7b8c429d44b1ce
   - enabled: 1
-    path: Assets/Scenes/00-BaseSetup.unity
+    path: Assets/CS Niantic/Scenes/00-BaseSetup.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 1
-    path: Assets/Scenes/01-Placement.unity
+    path: Assets/CS Niantic/Scenes/01-Placement.unity
     guid: af045528c71667a45a228c7b77b8b05d
   - enabled: 1
-    path: Assets/Scenes/02-Occlusion.unity
+    path: Assets/CS Niantic/Scenes/02-Occlusion.unity
     guid: 6077ef1318bae30408cd92dd84de8ce5
   - enabled: 1
-    path: Assets/Scenes/03-Semantics.unity
+    path: Assets/CS Niantic/Scenes/03-Semantics.unity
     guid: 5fd5655fa8e269448ab98b6d3185064d
   - enabled: 1
-    path: Assets/Scenes/04-SemanticTextures.unity
+    path: Assets/CS Niantic/Scenes/04-SemanticTextures.unity
     guid: c1c604523e6edfa46a9d1f7999074d74
   - enabled: 1
-    path: Assets/Scenes/05-AR Mesh.unity
+    path: Assets/CS Niantic/Scenes/05-AR Mesh.unity
     guid: d753945fcf22c9d4ab0887e20eae03d1
   - enabled: 1
-    path: Assets/Scenes/06-SharedAR Basic.unity
+    path: Assets/CS Niantic/Scenes/06-SharedAR Basic.unity
     guid: 4dca502ae74dd71478933559e78e3ad0
   - enabled: 1
-    path: Assets/Scenes/07-SharedAR Object.unity
+    path: Assets/CS Niantic/Scenes/07-SharedAR Object.unity
     guid: 3a51474e9ed12444da113e84acc40254
   - enabled: 1
-    path: Assets/Scenes/08-Paint Ball.unity
+    path: Assets/CS Niantic/Scenes/08-Paint Ball.unity
     guid: 7cddabb72d540a741b4073e5c81c1451
   m_configObjects: {}

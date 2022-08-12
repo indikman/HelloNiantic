@@ -18,9 +18,9 @@ public class SharedARBasic : MonoBehaviour
     [SerializeField] private GameObject playerIndicator;
 
     // ARDK referrences
-    private IARNetworking arNetworking;
-    private IMultipeerNetworking networking;
-    private IARSession arSession;
+    public IARNetworking arNetworking;
+    public IMultipeerNetworking networking;
+    public IARSession arSession;
 
     // Dictionary to hold the players connected
     private Dictionary<IPeer, GameObject> playerIndicators = new Dictionary<IPeer, GameObject>();

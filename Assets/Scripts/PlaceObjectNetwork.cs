@@ -7,10 +7,13 @@ using Niantic.ARDK.Networking;
 using Niantic.ARDK.AR.Networking;
 using Niantic.ARDK.Extensions;
 using Niantic.ARDK.Networking.HLAPI.Object.Unity;
+using Niantic.ARDK.Networking.HLAPI.Authority;
 
 
 public class PlaceObjectNetwork : MonoBehaviour
 {
+    [SerializeField] private SharedARBasic arNetwork;
+
     // Object to instantiate over network
     [SerializeField] private NetworkedUnityObject placementObjectPrefab;
 
@@ -21,7 +24,7 @@ public class PlaceObjectNetwork : MonoBehaviour
     private NetworkedUnityObject SpawnObjectForAllPeers(Vector3 pos, Quaternion rot)
     {
         // This will spawn the object not just in the host, but also in other peers and return it
-        return placementObjectPrefab.NetworkSpawn(pos, rot);
+        return placementObjectPrefab.NetworkSpawn(arNetwork.networking, pos, rot, Role.Authority);
     }
 
     public void PlaceObject()

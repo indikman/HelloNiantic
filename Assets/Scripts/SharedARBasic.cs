@@ -6,6 +6,7 @@ using TMPro;
 using Niantic.ARDK;
 using Niantic.ARDK.AR.Networking;
 using Niantic.ARDK.AR.Networking.ARNetworkingEventArgs;
+using Niantic.ARDK.Networking.MultipeerNetworkingEventArgs;
 using Niantic.ARDK.Networking;
 using Niantic.ARDK.AR;
 using Niantic.ARDK.Extensions;
@@ -23,8 +24,9 @@ public class SharedARBasic : MonoBehaviour
     public IARSession arSession;
 
     // Dictionary to hold the players connected
-    private Dictionary<IPeer, GameObject> playerIndicators = new Dictionary<IPeer, GameObject>();
+    public Dictionary<IPeer, GameObject> playerIndicators = new Dictionary<IPeer, GameObject>();
 
+    public IPeer self;
 
     private void Awake()
     {
@@ -39,8 +41,17 @@ public class SharedARBasic : MonoBehaviour
         arSession = arNetworking.ARSession;
         networking = arNetworking.Networking;
 
+        //OnConnected
+        networking.Connected += OnConnected;
+
         arNetworking.PeerStateReceived += OnPeerStateReceived;
         arNetworking.PeerPoseReceived += OnPeerPoseReceived;
+
+    }
+
+    private void OnConnected(ConnectedArgs args)
+    {
+        self = args.Self;
 
     }
 

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8252247920310363465}
   - component: {fileID: 8252247920310363472}
   - component: {fileID: 8252247920310363478}
-  - component: {fileID: 4365416278278449321}
+  - component: {fileID: -8881796834591011931}
   m_Layer: 0
   m_Name: CS Cube Net Static
   m_TagString: Untagged
@@ -64,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4e9889781f60cbb4b9bcbc8e45f6b335, type: 2}
+  - {fileID: 2100000, guid: c8300203e93261c47813417875551b7b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -103,10 +103,10 @@ MonoBehaviour:
   _destructionAuthorizedPeers: 2
   _destroyIfDestroyerLeaves: 0
   _auth: {fileID: 8252247920310363478}
-  _defaultBehaviour: {fileID: 4365416278278449321}
+  _defaultBehaviour: {fileID: -8881796834591011931}
   _behaviours:
   - {fileID: 8252247920310363478}
-  - {fileID: 4365416278278449321}
+  - {fileID: -8881796834591011931}
 --- !u!114 &8252247920310363478
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -122,7 +122,7 @@ MonoBehaviour:
   _owner: {fileID: 8252247920310363472}
   _ownedByHost: 0
   _observeByDefault: 1
---- !u!114 &4365416278278449321
+--- !u!114 &-8881796834591011931
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -131,8 +131,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8252247920310363463}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed3d79a91d614637b36cb1ab7eb7a887, type: 3}
+  m_Script: {fileID: 11500000, guid: 62642bb52eba9be41aa7f37ef593dd78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _owner: {fileID: 8252247920310363472}
-  _replicatedPieces: 3

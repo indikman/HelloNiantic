@@ -4,7 +4,8 @@ using System;
 namespace Niantic.ARDK.AR.WayspotAnchors
 {
   internal sealed class _SerializableWayspotAnchorsConfiguration:
-    IWayspotAnchorsConfiguration
+    IWayspotAnchorsConfiguration,
+    _IWayspotAnchorsDebugConfiguration
   {
     public float LocalizationTimeout { get; set; }
 

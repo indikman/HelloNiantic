@@ -59,6 +59,12 @@ namespace Niantic.ARDK.AR.Configuration
     /// A value specifying the target size of a mesh block in meters.
     float MeshingTargetBlockSize { get; set; }
 
+    /// A boolean specifying whether or not palms are detected.
+    /// @note This is an experimental feature. Experimental features should not be used in
+    /// production products as they are subject to breaking changes, not officially supported, and
+    /// may be deprecated without notice
+    bool IsPalmDetectionEnabled { get; set; }
+
     /// <summary>
     /// Set the detection images for this configuration asynchronously. The provided callback will
     ///   be called upon completion.

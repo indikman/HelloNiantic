@@ -8,7 +8,6 @@ using Niantic.ARDK.Networking;
 using Niantic.ARDK.Networking.MultipeerNetworkingEventArgs;
 using Niantic.ARDK.Utilities;
 using Niantic.ARDK.Utilities.Logging;
-using Niantic.ARDK.Utilities.Permissions;
 
 using UnityEngine;
 
@@ -75,7 +74,7 @@ namespace Niantic.ARDK.Extensions
     private Guid _stageIdentifier;
 
     private bool _shouldBeRunning;
-    
+
     public IARSession ARSession { get; private set; }
 
     public ARSessionRunOptions RunOptions
@@ -137,6 +136,7 @@ namespace Niantic.ARDK.Extensions
 
       if (_useWithARNetworkingSession)
         MultipeerNetworkingFactory.NetworkingInitialized += ListenForStage;
+      
 
       if (_capabilityChecker.HasSucceeded)
         ScheduleCreateAndRunOnNextUpdate();

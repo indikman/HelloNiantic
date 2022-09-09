@@ -12,7 +12,7 @@ namespace Niantic.ARDKExamples.WayspotAnchors
   public static class WayspotAnchorDataUtility
   {
     private const string DataKey = "wayspot_anchor_payloads";
-    
+
     public static void SaveLocalPayloads(WayspotAnchorPayload[] wayspotAnchorPayloads)
     {
       var wayspotAnchorsData = new WayspotAnchorsData();
@@ -38,6 +38,7 @@ namespace Niantic.ARDKExamples.WayspotAnchors
       }
       else
       {
+        Debug.Log("No payloads were found to load.");
         return Array.Empty<WayspotAnchorPayload>();
       }
     }
@@ -46,10 +47,10 @@ namespace Niantic.ARDKExamples.WayspotAnchors
     {
       if (PlayerPrefs.HasKey(DataKey))
       {
-        PlayerPrefs.DeleteKey(DataKey); 
+        PlayerPrefs.DeleteKey(DataKey);
       }
     }
-    
+
     [Serializable]
     private class WayspotAnchorsData
     {

@@ -19,6 +19,7 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "zxing.unity.dll",
+        "Niantic.Platform.Analytics.NATelemetry.dll",
         "Niantic.Google.Protobuf.dll"
     ],
     "autoReferenced": true,

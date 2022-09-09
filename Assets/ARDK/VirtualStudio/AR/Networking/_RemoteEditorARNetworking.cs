@@ -27,6 +27,7 @@ namespace Niantic.ARDK.VirtualStudio.Remote
     private bool _isInitialized;
     private bool _isDisposed;
 
+#pragma warning disable 0618
     internal _RemoteEditorARNetworking(IARSession arSession, IMultipeerNetworking networking)
     {
       ARSession = arSession;
@@ -85,7 +86,8 @@ namespace Niantic.ARDK.VirtualStudio.Remote
       else
         _HandleNetworkingAboutToBeDestroyed(null);
     }
-
+#pragma warning restore 0618
+    
     /// <inheritdoc />
     public IMultipeerNetworking Networking { get; private set; }
 

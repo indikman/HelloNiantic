@@ -99,7 +99,15 @@ namespace Niantic.ARDK.LocationService
 
     public override string ToString()
     {
-      return $"{Coordinates.Latitude}°, {Coordinates.Longitude}° (Altitude: {Altitude}, Horizontal Accuracy: {HorizontalAccuracy}, Vertical Accuracy: {VerticalAccuracy}";
+      return string.Format
+      (
+        "{0:F4}°, {1:F4}° (Altitude: {2:F4}, Horizontal Accuracy: {3:F4}, Vertical Accuracy: {4:F4}",
+        Coordinates.Latitude,
+        Coordinates.Longitude,
+        Altitude,
+        HorizontalAccuracy,
+        VerticalAccuracy
+      );
     }
 
     private static bool ApproximatelyEquals(double x, double y)

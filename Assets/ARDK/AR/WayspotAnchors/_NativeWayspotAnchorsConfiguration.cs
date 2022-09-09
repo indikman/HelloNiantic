@@ -5,35 +5,37 @@ using System;
 using System.Text;
 using System.Runtime.InteropServices;
 
+using Niantic.ARDK.Utilities;
+
 namespace Niantic.ARDK.AR.WayspotAnchors
 {
   internal sealed class _NativeWayspotAnchorsConfiguration:
-    IWayspotAnchorsConfiguration
+    IWayspotAnchorsConfiguration,
+    _IWayspotAnchorsDebugConfiguration
   {
     internal _NativeWayspotAnchorsConfiguration()
     {
+      _NativeAccess.AssertNativeAccessValid();
+
       var nativeHandle = _NARVPSConfiguration_Init();
       if (nativeHandle == IntPtr.Zero)
         throw new ArgumentException("nativeHandle can't be Zero.", nameof(nativeHandle));
 
       _nativeHandle = nativeHandle;
-      GC.AddMemoryPressure(_MemoryPressure);
+      GC.AddMemoryPressure(_memoryPressure);
     }
 
     private static void _ReleaseImmediate(IntPtr nativeHandle)
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        _NARVPSConfiguration_Release(nativeHandle);
+      _NARVPSConfiguration_Release(nativeHandle);
     }
 
     ~_NativeWayspotAnchorsConfiguration()
     {
       if (_nativeHandle != IntPtr.Zero)
-      {
         _ReleaseImmediate(_nativeHandle);
-      }
 
-      GC.RemoveMemoryPressure(_MemoryPressure);
+      GC.RemoveMemoryPressure(_memoryPressure);
     }
 
     public void Dispose()
@@ -46,7 +48,7 @@ namespace Niantic.ARDK.AR.WayspotAnchors
         _nativeHandle = IntPtr.Zero;
 
         _ReleaseImmediate(nativeHandle);
-        GC.RemoveMemoryPressure(_MemoryPressure);
+        GC.RemoveMemoryPressure(_memoryPressure);
       }
     }
 
@@ -61,7 +63,7 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     // (float)requestPerSecond + (float)gpsWait + (uint32_t)maxRequestInTransit + (uint32_t)meshType
     // (string)localizationEndpoint + (string)meshDownloadEndpoint
     // 1 string/uuid + 4 floats + 2 uint32_t + 2(120-byte strings)
-    private long _MemoryPressure
+    private long _memoryPressure
     {
       get => (1L * 8L) + (4L * 4L) + (2L * 4L) + (2L * 120L);
     }
@@ -70,16 +72,11 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          return _NARVPSConfiguration_GetLocalizationTimeout(_NativeHandle);
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        return _NARVPSConfiguration_GetLocalizationTimeout(_NativeHandle);
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetLocalizationTimeout(_NativeHandle, value);
+        _NARVPSConfiguration_SetLocalizationTimeout(_NativeHandle, value);
       }
     }
 
@@ -87,16 +84,11 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          return _NARVPSConfiguration_GetRequestTimeLimit(_NativeHandle);
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        return _NARVPSConfiguration_GetRequestTimeLimit(_NativeHandle);
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetRequestTimeLimit(_NativeHandle, value);
+        _NARVPSConfiguration_SetRequestTimeLimit(_NativeHandle, value);
       }
     }
 
@@ -104,16 +96,11 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          return _NARVPSConfiguration_GetRequestsPerSecond(_NativeHandle);
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        return _NARVPSConfiguration_GetRequestsPerSecond(_NativeHandle);
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetRequestsPerSecond(_NativeHandle, value);
+        _NARVPSConfiguration_SetRequestsPerSecond(_NativeHandle, value);
       }
     }
 
@@ -121,16 +108,11 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          return _NARVPSConfiguration_GetResolutionsPerSecond(_NativeHandle);
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        return _NARVPSConfiguration_GetResolutionsPerSecond(_NativeHandle);
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetResolutionsPerSecond(_NativeHandle, value);
+        _NARVPSConfiguration_SetResolutionsPerSecond(_NativeHandle, value);
       }
     }
 
@@ -138,16 +120,11 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          return _NARVPSConfiguration_GetGoodTrackingWaitSeconds(_NativeHandle);
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        return _NARVPSConfiguration_GetGoodTrackingWaitSeconds(_NativeHandle);
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetGoodTrackingWaitSeconds(_NativeHandle, value);
+        _NARVPSConfiguration_SetGoodTrackingWaitSeconds(_NativeHandle, value);
       }
     }
 
@@ -156,17 +133,11 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          return _NARVPSConfiguration_GetContinuousLocalizationEnabled(_NativeHandle) != 0;
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        return _NARVPSConfiguration_GetContinuousLocalizationEnabled(_NativeHandle) != 0;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetContinuousLocalizationEnabled
-            (_NativeHandle, value ? 1 : (UInt32)0);
+        _NARVPSConfiguration_SetContinuousLocalizationEnabled(_NativeHandle, value ? 1 : (UInt32)0);
       }
     }
 
@@ -174,16 +145,11 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          return _NARVPSConfiguration_GetCloudProcessingForced(_NativeHandle) != 0;
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        return _NARVPSConfiguration_GetCloudProcessingForced(_NativeHandle) != 0;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetCloudProcessingForced(_NativeHandle, value ? 1 : (UInt32)0);
+        _NARVPSConfiguration_SetCloudProcessingForced(_NativeHandle, value ? 1 : (UInt32)0);
       }
     }
 
@@ -191,16 +157,11 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          return _NARVPSConfiguration_GetClientProcessingForced(_NativeHandle) != 0;
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        return _NARVPSConfiguration_GetClientProcessingForced(_NativeHandle) != 0;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetClientProcessingForced(_NativeHandle, value ? 1 : (UInt32)0);
+        _NARVPSConfiguration_SetClientProcessingForced(_NativeHandle, value ? 1 : (UInt32)0);
       }
     }
 
@@ -208,24 +169,22 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        {
-          const int MaxUrlLength = 2083;
-          var stringBuilder = new StringBuilder(MaxUrlLength);
-          _NARVPSConfiguration_GetConfigEndpoint
-            (_NativeHandle, stringBuilder, (ulong)stringBuilder.Capacity);
+        const int MaxUrlLength = 2083;
+        var stringBuilder = new StringBuilder(MaxUrlLength);
 
-          var result = stringBuilder.ToString();
-          return result;
-        }
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        _NARVPSConfiguration_GetConfigEndpoint
+        (
+          _NativeHandle,
+          stringBuilder,
+          (ulong)stringBuilder.Capacity
+        );
+
+        var result = stringBuilder.ToString();
+        return result;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetConfigEndpoint(_NativeHandle, value);
+        _NARVPSConfiguration_SetConfigEndpoint(_NativeHandle, value);
       }
     }
 
@@ -233,23 +192,21 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        {
-          var stringBuilder = new StringBuilder(512);
-          _NARVPSConfiguration_GetHealthEndpoint
-            (_NativeHandle, stringBuilder, (ulong)stringBuilder.Capacity);
+        var stringBuilder = new StringBuilder(512);
 
-          var result = stringBuilder.ToString();
-          return result;
-        }
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        _NARVPSConfiguration_GetHealthEndpoint
+        (
+          _NativeHandle,
+          stringBuilder,
+          (ulong)stringBuilder.Capacity
+        );
+
+        var result = stringBuilder.ToString();
+        return result;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetHealthEndpoint(_NativeHandle, value);
+        _NARVPSConfiguration_SetHealthEndpoint(_NativeHandle, value);
       }
     }
 
@@ -257,23 +214,21 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        {
-          var stringBuilder = new StringBuilder(512);
-          _NARVPSConfiguration_GetLocalizationEndpoint
-            (_NativeHandle, stringBuilder, (ulong)stringBuilder.Capacity);
+        var stringBuilder = new StringBuilder(512);
 
-          var result = stringBuilder.ToString();
-          return result;
-        }
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        _NARVPSConfiguration_GetLocalizationEndpoint
+        (
+          _NativeHandle,
+          stringBuilder,
+          (ulong)stringBuilder.Capacity
+        );
+
+        var result = stringBuilder.ToString();
+        return result;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetLocalizationEndpoint(_NativeHandle, value);
+        _NARVPSConfiguration_SetLocalizationEndpoint(_NativeHandle, value);
       }
     }
 
@@ -281,23 +236,21 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        {
-          var stringBuilder = new StringBuilder(512);
-          _NARVPSConfiguration_GetGraphSyncEndpoint
-            (_NativeHandle, stringBuilder, (ulong)stringBuilder.Capacity);
+        var stringBuilder = new StringBuilder(512);
 
-          var result = stringBuilder.ToString();
-          return result;
-        }
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        _NARVPSConfiguration_GetGraphSyncEndpoint
+        (
+          _NativeHandle,
+          stringBuilder,
+          (ulong)stringBuilder.Capacity
+        );
+
+        var result = stringBuilder.ToString();
+        return result;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetGraphSyncEndpoint(_NativeHandle, value);
+        _NARVPSConfiguration_SetGraphSyncEndpoint(_NativeHandle, value);
       }
     }
 
@@ -305,23 +258,21 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        {
-          var stringBuilder = new StringBuilder(512);
-          _NARVPSConfiguration_GetManagedPoseCreateEndpoint
-            (_NativeHandle, stringBuilder, (ulong)stringBuilder.Capacity);
+        var stringBuilder = new StringBuilder(512);
 
-          var result = stringBuilder.ToString();
-          return result;
-        }
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        _NARVPSConfiguration_GetManagedPoseCreateEndpoint
+        (
+          _NativeHandle,
+          stringBuilder,
+          (ulong)stringBuilder.Capacity
+        );
+
+        var result = stringBuilder.ToString();
+        return result;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetManagedPoseCreateEndpoint(_NativeHandle, value);
+        _NARVPSConfiguration_SetManagedPoseCreateEndpoint(_NativeHandle, value);
       }
     }
 
@@ -329,23 +280,21 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        {
-          var stringBuilder = new StringBuilder(512);
-          _NARVPSConfiguration_GetManagedPoseResolveEndpoint
-            (_NativeHandle, stringBuilder, (ulong)stringBuilder.Capacity);
+        var stringBuilder = new StringBuilder(512);
 
-          var result = stringBuilder.ToString();
-          return result;
-        }
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        _NARVPSConfiguration_GetManagedPoseResolveEndpoint
+        (
+          _NativeHandle,
+          stringBuilder,
+          (ulong)stringBuilder.Capacity
+        );
+
+        var result = stringBuilder.ToString();
+        return result;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetManagedPoseResolveEndpoint(_NativeHandle, value);
+        _NARVPSConfiguration_SetManagedPoseResolveEndpoint(_NativeHandle, value);
       }
     }
 
@@ -353,23 +302,21 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        {
-          var stringBuilder = new StringBuilder(512);
-          _NARVPSConfiguration_GetRegisterNodeEndpoint
-            (_NativeHandle, stringBuilder, (ulong)stringBuilder.Capacity);
+        var stringBuilder = new StringBuilder(512);
 
-          var result = stringBuilder.ToString();
-          return result;
-        }
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        _NARVPSConfiguration_GetRegisterNodeEndpoint
+        (
+          _NativeHandle,
+          stringBuilder,
+          (ulong)stringBuilder.Capacity
+        );
+
+        var result = stringBuilder.ToString();
+        return result;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetRegisterNodeEndpoint(_NativeHandle, value);
+        _NARVPSConfiguration_SetRegisterNodeEndpoint(_NativeHandle, value);
       }
     }
 
@@ -377,23 +324,21 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        {
-          var stringBuilder = new StringBuilder(512);
-          _NARVPSConfiguration_GetLookUpNodeEndpoint
-            (_NativeHandle, stringBuilder, (ulong)stringBuilder.Capacity);
+        var stringBuilder = new StringBuilder(512);
 
-          var result = stringBuilder.ToString();
-          return result;
-        }
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        _NARVPSConfiguration_GetLookUpNodeEndpoint
+        (
+          _NativeHandle,
+          stringBuilder,
+          (ulong)stringBuilder.Capacity
+        );
+
+        var result = stringBuilder.ToString();
+        return result;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARVPSConfiguration_SetLookUpNodeEndpoint(_NativeHandle, value);
+        _NARVPSConfiguration_SetLookUpNodeEndpoint(_NativeHandle, value);
       }
     }
 
@@ -403,7 +348,6 @@ namespace Niantic.ARDK.AR.WayspotAnchors
 
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern void _NARVPSConfiguration_Release(IntPtr nativeHandle);
-
 
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern float _NARVPSConfiguration_GetLocalizationTimeout(IntPtr nativeHandle);
@@ -575,7 +519,6 @@ namespace Niantic.ARDK.AR.WayspotAnchors
       StringBuilder outUrl,
       ulong maxKeySize
     );
-
 
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern void _NARVPSConfiguration_SetLookUpNodeEndpoint

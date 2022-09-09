@@ -1,5 +1,7 @@
 // Copyright 2022 Niantic, Inc. All Rights Reserved.
 
+using Niantic.ARDK.AR.Protobuf;
+
 namespace Niantic.ARDK.Configuration.Internal
 {
   internal interface _IArdkMetadataConfig
@@ -41,5 +43,8 @@ namespace Niantic.ARDK.Configuration.Internal
 
     // Get the currently set Api Key, or an empty string if none has been set
     string GetApiKey();
+    
+    // Get the currently set Api Key, or an empty string if none has been set
+    ARClientEnvelope.Types.AgeLevel GetAgeLevel();
   }
 }

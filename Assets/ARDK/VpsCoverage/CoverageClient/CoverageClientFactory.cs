@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
+using Niantic.ARDK.Utilities.Logging;
+using Niantic.ARDK.VirtualStudio;
 using Niantic.ARDK.VirtualStudio.VpsCoverage;
 
 namespace Niantic.ARDK.VPSCoverage
@@ -19,7 +21,7 @@ namespace Niantic.ARDK.VPSCoverage
     /// @returns The created loader, or throws if it was not possible to create a loader.
     public static ICoverageClient Create()
     {
-      return _Create(null);
+      return Create(_VirtualStudioLauncher.SelectedMode);
     }
 
     /// Create an ICoverageLoader with the specified RuntimeEnvironment.
@@ -35,6 +37,9 @@ namespace Niantic.ARDK.VPSCoverage
     /// @returns The created loader, or null if it was not possible to create a loader.
     public static ICoverageClient Create(RuntimeEnvironment env, VpsCoverageResponses mockResponses = null)
     {
+      if (env == RuntimeEnvironment.Default)
+        return Create(_VirtualStudioLauncher.SelectedMode, mockResponses);
+
       ICoverageClient result;
       switch (env)
       {
@@ -58,44 +63,5 @@ namespace Niantic.ARDK.VPSCoverage
 
       return result;
     }
-
-    private static readonly RuntimeEnvironment[] _defaultBestMatches =
-#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
-      new RuntimeEnvironment[] { RuntimeEnvironment.LiveDevice };
-#else
-      new RuntimeEnvironment[] { RuntimeEnvironment.Mock };
-#endif
-
-    /// Tries to create an ICoverageLoader implementation of any of the given envs.
-    ///
-    /// @param envs
-    ///   A collection of runtime environments used to create the session for. As not all platforms
-    ///   support all environments, the code will try to create the session for the first
-    ///   environment, then for the second and so on. If envs is null or empty, then the order used
-    ///   is LiveDevice, Remote and finally Mock.
-    ///
-    /// @returns The created loader, or null if it was not possible to create a loader.
-    internal static ICoverageClient _Create(IEnumerable<RuntimeEnvironment> envs = null)
-    {
-      bool triedAtLeast1 = false;
-
-      if (envs != null)
-      {
-        foreach (var env in envs)
-        {
-          var possibleResult = Create(env);
-          if (possibleResult != null)
-            return possibleResult;
-
-          triedAtLeast1 = true;
-        }
-      }
-
-      if (!triedAtLeast1)
-        return _Create(_defaultBestMatches);
-
-      throw new NotSupportedException("None of the provided envs are supported by this build.");
-    }
-
   }
 }

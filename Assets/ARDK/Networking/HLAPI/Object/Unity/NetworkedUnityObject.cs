@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Niantic.ARDK.External;
-using Niantic.ARDK.Internals.EditorUtilities;
 using Niantic.ARDK.Networking.HLAPI.Authority;
 using Niantic.ARDK.Networking.HLAPI.Routing;
 using Niantic.ARDK.Networking.MultipeerNetworkingEventArgs;
+using Niantic.ARDK.Utilities.Editor;
 using Niantic.ARDK.Utilities.Logging;
 
 using UnityEngine;

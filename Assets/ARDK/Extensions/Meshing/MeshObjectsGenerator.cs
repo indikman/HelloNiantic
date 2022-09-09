@@ -105,6 +105,31 @@ namespace Niantic.ARDK.Extensions.Meshing
       }
     }
 
+    public void SetRendererEnabled(bool isEnabled)
+    {
+      if (_prefab == null)
+      {
+        ARLog._Error("Failed to change the mesh renderer enabled status because no mesh prefab was set.");
+        return;
+      }
+
+      MeshRenderer meshRenderer = _prefab.GetComponent<MeshRenderer>();
+      if (meshRenderer == null)
+      {
+        ARLog._Error("Failed to change the mesh renderer enabled status  because the mesh prefab lacks a MeshRenderer.");
+        return;
+      }
+
+      meshRenderer.enabled = isEnabled;
+
+      foreach (var blockObject in _blockObjects.Values)
+      {
+        var blockRenderer = blockObject.GetComponent<MeshRenderer>();
+        if (blockRenderer)
+          blockRenderer.enabled = isEnabled;
+      }
+    }
+
     public void SetUseInvisibleMaterial(bool useInvisible)
     {
       _usingInvisibleMaterial = useInvisible;

@@ -1,9 +1,11 @@
 // Copyright 2022 Niantic, Inc. All Rights Reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 using Niantic.ARDK.AR.Anchors;
+using Niantic.ARDK.AR.Awareness;
 using Niantic.ARDK.AR.Awareness.Depth;
 using Niantic.ARDK.AR.Awareness.Semantics;
 using Niantic.ARDK.AR.Camera;
@@ -12,7 +14,9 @@ using Niantic.ARDK.AR.Image;
 using Niantic.ARDK.AR.LightEstimate;
 using Niantic.ARDK.AR.PointCloud;
 using Niantic.ARDK.AR.SLAM;
+using Niantic.ARDK.Utilities;
 using Niantic.ARDK.Utilities.Collections;
+using Niantic.ARDK.VirtualStudio.AR.Mock;
 
 using UnityEngine;
 
@@ -36,7 +40,6 @@ namespace Niantic.ARDK.AR.Frame
       ReadOnlyCollection<IARAnchor> anchors, // Even native ARAnchors are directly serializable.
       _SerializableARMap[] maps,
       float worldScale,
-      Matrix4x4 estimatedDisplayTransform,
       _SerializableARPointCloud featurePoints
     )
     {
@@ -49,8 +52,6 @@ namespace Niantic.ARDK.AR.Frame
       RawFeaturePoints = featurePoints;
       Anchors = anchors;
       Maps = maps.AsNonNullReadOnly<IARMap>();
-      
-      _estimatedDisplayTransform = estimatedDisplayTransform;
     }
 
     public void Dispose()
@@ -63,6 +64,9 @@ namespace Niantic.ARDK.AR.Frame
     public _SerializableImageBuffer CapturedImageBuffer { get; set; }
     public _SerializableDepthBuffer DepthBuffer { get; set; }
     public _SerializableSemanticBuffer SemanticBuffer { get; set; }
+
+    public IReadOnlyList<Detection> PalmDetections { get; set; }
+
     public _SerializableARCamera Camera { get; set; }
     public _SerializableARLightEstimate LightEstimate { get; set; }
     public ReadOnlyCollection<IARAnchor> Anchors { get; set; }
@@ -84,7 +88,6 @@ namespace Niantic.ARDK.AR.Frame
       ARHitTestResultType types
     );
 
-    private readonly Matrix4x4 _estimatedDisplayTransform;
     public Matrix4x4 CalculateDisplayTransform
     (
       ScreenOrientation orientation,
@@ -92,7 +95,21 @@ namespace Niantic.ARDK.AR.Frame
       int viewportHeight
     )
     {
-      return _estimatedDisplayTransform;
+       // Cannot use Screen properties in Editor due to this bug: Unity Issue-598763
+ #if UNITY_EDITOR
+       return
+         MathUtils.CalculateDisplayTransform
+         (
+           _MockFrameBufferProvider._ARImageWidth,
+           _MockFrameBufferProvider._ARImageHeight,
+           viewportWidth,
+           viewportHeight,
+           orientation,
+           invertVertically: true
+         );
+#else
+      throw new InvalidOperationException();
+#endif
     }
 
     public void ReleaseImageAndTextures()

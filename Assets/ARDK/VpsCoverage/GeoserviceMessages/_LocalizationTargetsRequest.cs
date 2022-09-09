@@ -24,13 +24,5 @@ namespace Niantic.ARDK.VPSCoverage.GeoserviceMessages
       query_id = queryId;
       ar_common_metadata = arCommonMetadata;
     }
-
-    public static string ReadFromFile()
-    {
-      string path = Path.Combine(Application.dataPath, "../../ARDK/Assets/ARDK/VpsCoverage/MockData/VpsCoverageTargets/VpsCoverageTargetsRequest.json");
-      string json = File.ReadAllText(path);
-
-      return json;
-    }
   }
 }

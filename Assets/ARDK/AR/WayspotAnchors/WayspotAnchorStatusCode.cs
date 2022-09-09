@@ -4,15 +4,22 @@ namespace Niantic.ARDK.AR.WayspotAnchors
   /// The enum for the wayspot anchor status codes
   public enum WayspotAnchorStatusCode
   {
-    // System is not ready yet to create/resolve anchor
+    /// Anchor has not yet been created or restored using VPS
     Pending = 0,
-    // Anchor creation or resolution was successful using VPS
+
+    /// Anchor creation or restoration was successful using VPS
     Success = 1,
-    // Anchor creation or resolution failed
+
+    /// Anchor creation or restoration failed because:
+    /// (1) Creation/resolution was attempted before starting VPS
+    /// (2) the Wayspot the anchor was created at is too far away
+    /// (3) the payload is corrupted
     Failed = 2,
-    // Anchor data is invalid
+
+    /// Anchor cannot be restored because it has expired.
     Invalid = 3,
-    // Anchor creation or resolution was successful but using GPS instead of VPS
+
+    /// Anchor creation or restoration was successful but using GPS instead of VPS
     Limited = 4
   }
 }

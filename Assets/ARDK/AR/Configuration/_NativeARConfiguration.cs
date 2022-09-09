@@ -18,11 +18,13 @@ namespace Niantic.ARDK.AR.Configuration
   {
     static _NativeARConfiguration()
     {
-      Platform.Init();
+      _Platform.Init();
     }
 
     internal _NativeARConfiguration(IntPtr nativeHandle)
     {
+      _NativeAccess.AssertNativeAccessValid();
+
       if (nativeHandle == IntPtr.Zero)
         throw new ArgumentException("nativeHandle can't be Zero.", nameof(nativeHandle));
 
@@ -32,8 +34,7 @@ namespace Niantic.ARDK.AR.Configuration
 
     private static void _ReleaseImmediate(IntPtr nativeHandle)
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        _NARConfiguration_Release(nativeHandle);
+      _NARConfiguration_Release(nativeHandle);
     }
 
     ~_NativeARConfiguration()
@@ -66,39 +67,27 @@ namespace Niantic.ARDK.AR.Configuration
 
     public abstract IReadOnlyCollection<IARVideoFormat> SupportedVideoFormats { get; }
 
-    public bool IsLightEstimationEnabled
+    public virtual bool IsLightEstimationEnabled
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          return _NARConfiguration_IsLightEstimationEnabled(NativeHandle) != 0;
-
-        #pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-        #pragma warning restore 0162
+        return _NARConfiguration_IsLightEstimationEnabled(NativeHandle) != 0;
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARConfiguration_SetLightEstimationEnabled(NativeHandle, value ? 1 : (UInt32)0);
+        _NARConfiguration_SetLightEstimationEnabled(NativeHandle, value ? 1 : (UInt32)0);
       }
     }
 
-    public WorldAlignment WorldAlignment
+    public virtual WorldAlignment WorldAlignment
     {
       get
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          return (WorldAlignment)_NARConfiguration_GetWorldAlignment(NativeHandle);
-
-#pragma warning disable 0162
-        throw new IncorrectlyUsedNativeClassException();
-#pragma warning restore 0162
+        return (WorldAlignment)_NARConfiguration_GetWorldAlignment(NativeHandle);
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-          _NARConfiguration_SetWorldAlignment(NativeHandle, (UInt64)value);
+        _NARConfiguration_SetWorldAlignment(NativeHandle, (UInt64)value);
       }
     }
 
@@ -117,13 +106,10 @@ namespace Niantic.ARDK.AR.Configuration
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        {
-          if (!(value is _NativeARVideoFormat nativeFormat))
+        if (!(value is _NativeARVideoFormat nativeFormat))
             return;
-          
-          _NARConfiguration_SetVideoFormat(NativeHandle, nativeFormat._NativeHandle);
-        }
+
+        _NARConfiguration_SetVideoFormat(NativeHandle, nativeFormat._NativeHandle);
       }
     }
 
@@ -131,6 +117,7 @@ namespace Niantic.ARDK.AR.Configuration
     {
       target.IsLightEstimationEnabled = IsLightEstimationEnabled;
       target.WorldAlignment = WorldAlignment;
+
       var videoFormat = VideoFormat;
       if (videoFormat != null)
         target.VideoFormat = videoFormat;

@@ -4,6 +4,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 
 using Niantic.ARDK.AR;
+using Niantic.ARDK.Utilities.Logging;
+using Niantic.ARDK.VirtualStudio;
+using Niantic.ARDK.VirtualStudio.AR;
+using Niantic.ARDK.VirtualStudio.LocationService;
+using Niantic.ARDK.VirtualStudio.Remote;
 
 namespace Niantic.ARDK.LocationService
 {
@@ -11,7 +16,7 @@ namespace Niantic.ARDK.LocationService
   {
     public static ILocationService Create()
     {
-      return _Create(null);
+      return Create(_VirtualStudioLauncher.SelectedMode);
     }
 
     public static ILocationService Create(RuntimeEnvironment env)
@@ -25,7 +30,7 @@ namespace Niantic.ARDK.LocationService
 #if !UNITY_EDITOR
           return new _UnityLocationService();
 #else
-          return null;
+          throw new InvalidOperationException();
 #endif
 
         case RuntimeEnvironment.Remote:
@@ -34,31 +39,12 @@ namespace Niantic.ARDK.LocationService
         case RuntimeEnvironment.Mock:
           return new SpoofLocationService();
 
+        case RuntimeEnvironment.Playback:
+          return new _PlaybackLocationService();
+
         default:
           throw new InvalidEnumArgumentException(nameof(env), (int)env, env.GetType());
       }
-    }
-
-    private static ILocationService _Create(IEnumerable<RuntimeEnvironment> envs = null)
-    {
-      bool triedAtLeast1 = false;
-
-      if (envs != null)
-      {
-        foreach (var env in envs)
-        {
-          var possibleResult = Create(env);
-          if (possibleResult != null)
-            return possibleResult;
-
-          triedAtLeast1 = true;
-        }
-      }
-
-      if (!triedAtLeast1)
-        return _Create(ARSessionFactory._defaultBestMatches);
-
-      throw new NotSupportedException("None of the provided envs are supported by this build.");
     }
   }
 }

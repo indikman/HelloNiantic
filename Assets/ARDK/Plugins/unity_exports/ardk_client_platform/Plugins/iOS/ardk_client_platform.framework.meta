@@ -103,7 +103,7 @@ PluginImporter:
       settings:
         AddToEmbeddedBinaries: 'true'
         CompileFlags: null
-        FrameworkDependencies: UIKit;Metal;Foundation;Security
+        FrameworkDependencies: UIKit;Security;Foundation;Metal
   serializedVersion: 2
 fileFormatVersion: 2
 guid: e290ee1fc6ec9ef6c8e2cedeb4d13fe9

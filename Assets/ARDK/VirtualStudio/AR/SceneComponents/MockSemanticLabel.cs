@@ -15,9 +15,20 @@ namespace Niantic.ARDK.VirtualStudio.AR.Mock
   [RequireComponent(typeof(MeshRenderer))]
   public class MockSemanticLabel: MonoBehaviour
   {
+    // Ordering of channel names here is not guaranteed to be the same as on live device.
+    // The addition of new channels may cause indices to shift, so it is recommended to use
+    // names rather than indices in your application code when referencing channels.
     public enum ChannelName
     {
-      sky, ground, artificial_ground, water, building, foliage, grass
+      sky,
+      ground,
+      artificial_ground,
+      water,
+      building,
+      foliage,
+      grass,
+      natural_ground,
+      person
     }
 
     public ChannelName Channel;
@@ -116,7 +127,18 @@ namespace Niantic.ARDK.VirtualStudio.AR.Mock
     }
 
 #region DEBUG
-    private static Color[] _debugColors = { Color.blue, new Color(165/255f, 42/255f, 42/255f, 1), Color.gray, Color.cyan, Color.yellow, Color.red, Color.green};
+    private static Color[] _debugColors =
+    {
+      Color.blue,
+      new Color(165 / 255f, 42 / 255f, 42 / 255f, 1), // brown
+      Color.gray,
+      Color.cyan,
+      Color.yellow,
+      Color.red,
+      Color.green,
+      new Color(207 / 255f, 171 / 255f, 132 / 255f, 1), // light brown
+      new Color(167 / 255f, 127 / 255f, 227 / 255f, 1), // lilac
+    };
 #endregion
   }
 }

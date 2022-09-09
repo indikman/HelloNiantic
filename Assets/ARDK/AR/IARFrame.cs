@@ -1,9 +1,11 @@
 // Copyright 2022 Niantic, Inc. All Rights Reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 using Niantic.ARDK.AR.Anchors;
+using Niantic.ARDK.AR.Awareness;
 using Niantic.ARDK.AR.Awareness.Depth;
 using Niantic.ARDK.AR.Awareness.Semantics;
 using Niantic.ARDK.AR.HitTest;
@@ -53,6 +55,14 @@ namespace Niantic.ARDK.AR
     /// @note **May be null**.
     /// </summary>
     ISemanticBuffer Semantics { get; }
+
+    /// <summary>
+    /// Gets the detection rectangle and confidence where palms may be.
+    /// @note This is an experimental feature. Experimental features should not be used in
+    /// production products as they are subject to breaking changes, not officially supported, and
+    /// may be deprecated without notice
+    /// </summary>
+    IReadOnlyList<Detection> PalmDetections { get; }
 
     /// <summary>
     /// Information about the camera position, orientation, and imaging parameters used to

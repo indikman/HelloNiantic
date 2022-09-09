@@ -1,8 +1,12 @@
 // Copyright 2022 Niantic, Inc. All Rights Reserved.
 using System;
 
+using UnityEditor;
+
 using UnityEngine;
 using UnityEngine.Rendering;
+
+using MathUtils = Niantic.ARDK.Utilities.MathUtils;
 
 namespace Niantic.ARDK.Rendering
 {
@@ -111,26 +115,6 @@ namespace Niantic.ARDK.Rendering
     public override int GetHashCode()
     {
       return Identifier.GetHashCode();
-    }
-
-    /// Returns the current screen orientation. When called in the editor,
-    /// this property infers the orientation from the screen resolution.
-    public static ScreenOrientation ScreenOrientation
-    {
-      get
-      {
-#if UNITY_EDITOR
-        return Screen.width > Screen.height
-#if UNITY_2021_3_OR_NEWER
-          ? UnityEngine.ScreenOrientation.LandscapeLeft
-#else
-          ? UnityEngine.ScreenOrientation.Landscape
-#endif
-          : UnityEngine.ScreenOrientation.Portrait;
-#else
-        return Screen.orientation;
-#endif
-      }
     }
   }
 }

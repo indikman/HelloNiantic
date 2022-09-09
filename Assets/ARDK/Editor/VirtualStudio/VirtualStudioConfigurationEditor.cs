@@ -1,15 +1,6 @@
 // Copyright 2022 Niantic, Inc. All Rights Reserved.
 
-using System.Linq;
-using System.Text;
-
-using Niantic.ARDK.VirtualStudio.AR;
-using Niantic.ARDK.AR.Configuration;
-using Niantic.ARDK.Networking;
-using Niantic.ARDK.Utilities.Logging;
-using Niantic.ARDK.VirtualStudio.AR.Mock;
-using Niantic.ARDK.VirtualStudio.Networking;
-using Niantic.ARDK.VirtualStudio.Networking.Mock;
+using System;
 
 using UnityEditor;
 
@@ -21,14 +12,17 @@ namespace Niantic.ARDK.VirtualStudio.Editor
   {
     // "None" tab correlates to RuntimeEnvironment.Native (as in nothing running in Virtual Studio),
     // so _vsModeTabSelection == (int)currRuntimeEnvironment - 1
-    private static readonly string[] _modeSelectionGridStrings = { "None", "Remote", "Mock" };
-    private int _vsModeTabSelection;
+    private static readonly string[] _modeSelectionGridStrings = { "None", "Remote", "Mock", "Playback" };
+    private int _vsModeTabSelection = -1;
 
     [SerializeField]
     private _RemoteConfigurationEditor _remoteConfigEditor;
 
     [SerializeField]
     private _MockPlayConfigurationEditor _mockPlayConfigEditor;
+
+    [SerializeField]
+    private _PlaybackConfigurationEditor _playbackConfigEditor;
 
     private static GUIStyle _headerStyle;
 
@@ -89,6 +83,7 @@ namespace Niantic.ARDK.VirtualStudio.Editor
 
       window._mockPlayConfigEditor = new _MockPlayConfigurationEditor();
       window._remoteConfigEditor = new _RemoteConfigurationEditor();
+      window._playbackConfigEditor = new _PlaybackConfigurationEditor();
 
       window.ApplyModeChange();
     }
@@ -102,6 +97,7 @@ namespace Niantic.ARDK.VirtualStudio.Editor
 
       _remoteConfigEditor.OnSelectionChange(currentRuntime == RuntimeEnvironment.Remote);
       _mockPlayConfigEditor.OnSelectionChange(currentRuntime == RuntimeEnvironment.Mock);
+      _playbackConfigEditor.OnSelectionChange(currentRuntime == RuntimeEnvironment.Playback);
     }
 
     private void OnGUI()
@@ -131,25 +127,37 @@ namespace Niantic.ARDK.VirtualStudio.Editor
             GUILayout.Space(10);
             _mockPlayConfigEditor.DrawGUI();
             break;
+
+          case RuntimeEnvironment.Playback:
+            EditorGUILayout.LabelField("Playback Mode", _HeaderStyle);
+            GUILayout.Space(10);
+            _playbackConfigEditor.DrawGUI();
+            break;
         }
       }
     }
 
     private void DrawEnabledGUI()
     {
+      if (_vsModeTabSelection < 0)
+        _vsModeTabSelection = (int)_VirtualStudioLauncher.SelectedMode - 1;
+
       var newModeSelection =
         GUI.SelectionGrid
         (
           new Rect(10, 20, 300, 20),
           _vsModeTabSelection,
           _modeSelectionGridStrings,
-          3
+          4
         );
 
       if (newModeSelection != _vsModeTabSelection)
       {
-        _vsModeTabSelection = newModeSelection;
-        _VirtualStudioLauncher.SelectedMode = (RuntimeEnvironment)(_vsModeTabSelection + 1);
+        _VirtualStudioLauncher.SelectedMode = (RuntimeEnvironment)(newModeSelection + 1);
+
+        // The _VirtualStudioLauncher.SelectedMode value is the source of truth, since an invalid
+        // mode might have been selected through the UI
+        _vsModeTabSelection = (int)_VirtualStudioLauncher.SelectedMode - 1;;
         ApplyModeChange();
       }
     }

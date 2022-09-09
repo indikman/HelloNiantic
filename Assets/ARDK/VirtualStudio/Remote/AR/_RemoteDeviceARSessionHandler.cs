@@ -160,7 +160,9 @@ namespace Niantic.ARDK.VirtualStudio.Remote
             includeFeaturePoints: includeFeaturePoints
           )
         },
+#pragma warning disable 612, 618 
         TransportType.ReliableUnordered
+#pragma warning restore 612, 618 
       );
     }
 

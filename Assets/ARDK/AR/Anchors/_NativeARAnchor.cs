@@ -16,18 +16,18 @@ namespace Niantic.ARDK.AR.Anchors
   {
     static _NativeARAnchor()
     {
-      Platform.Init();
+      _Platform.Init();
     }
 
     internal static void _ReleaseImmediate(IntPtr nativeHandle)
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
       {
         if (nativeHandle != IntPtr.Zero)
           _NARAnchor_Release(nativeHandle);
       }
       #pragma warning disable 0162
-      else if (NativeAccess.Mode == NativeAccess.ModeType.Testing)
+      else if (_NativeAccess.Mode == _NativeAccess.ModeType.Testing)
       {
         _TestingShim.ReleasedHandles.Add(nativeHandle);
       }
@@ -38,7 +38,7 @@ namespace Niantic.ARDK.AR.Anchors
     {
       Guid result;
 
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
       {
         _NARAnchor_GetIdentifier(nativeHandle, out result);
       }
@@ -71,7 +71,7 @@ namespace Niantic.ARDK.AR.Anchors
 
       GC.AddMemoryPressure(MemoryPressure);
     }
-    
+
     ~_NativeARAnchor()
     {
       _ReleaseImmediate(_nativeHandle);
@@ -114,10 +114,10 @@ namespace Niantic.ARDK.AR.Anchors
       {
         var nativeTransform = new float[16];
 
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+        if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
           _NARAnchor_GetTransform(_nativeHandle, nativeTransform);
         #pragma warning disable 0162
-        else if (NativeAccess.Mode == NativeAccess.ModeType.Testing)
+        else if (_NativeAccess.Mode == _NativeAccess.ModeType.Testing)
           nativeTransform = _TestingShim.RawTransform;
         #pragma warning restore 0162
 

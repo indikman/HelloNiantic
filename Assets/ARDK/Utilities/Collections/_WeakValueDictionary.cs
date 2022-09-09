@@ -185,5 +185,13 @@ namespace Niantic.ARDK.Utilities
 
       return _innerDictionary.TryRemove(key, out _);
     }
+
+    public bool ContainsKey(TKey key)
+    {
+      if (key == null)
+        throw new ArgumentNullException(nameof(key));
+
+      return _innerDictionary.ContainsKey(key);
+    }
   }
 }

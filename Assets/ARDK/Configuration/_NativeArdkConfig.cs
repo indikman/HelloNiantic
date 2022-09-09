@@ -4,8 +4,10 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
+using Niantic.ARDK.AR.Protobuf;
 using Niantic.ARDK.Internals;
 using Niantic.ARDK.Networking;
+using Niantic.ARDK.Utilities;
 using Niantic.ARDK.Utilities.Logging;
 using Niantic.ARDK.Utilities.VersionUtilities;
 
@@ -17,12 +19,15 @@ namespace Niantic.ARDK.Configuration
     _ArdkGlobalConfigBase
   {
     private string _dbowUrl;
+    private const int _TelemetryKeyMaxLength = 512;
 
+    private bool gettingPlatformFirstTime = true;
+    
     public _NativeArdkConfig()
     {
-        ARLog._Debug($"Using config: {nameof(_NativeArdkConfig)}");
+      ARLog._Debug($"Using config: {nameof(_NativeArdkConfig)}");
     }
-
+    
     public override bool SetUserIdOnLogin(string userId)
     {
       if (!_NAR_ARDKGlobalConfigHelper_SetUserId(userId))
@@ -103,7 +108,7 @@ namespace Niantic.ARDK.Configuration
 
     public override NetworkingErrorCode VerifyApiKeyWithFeature(string feature, bool isAsync)
     {
-      var error = 
+      var error =
         (NetworkingErrorCode) _NAR_ARDKGlobalConfigHelper_ValidateApiKeyWithFeature(feature, isAsync);
 
       return error;
@@ -119,7 +124,7 @@ namespace Niantic.ARDK.Configuration
 
       return true;
     }
-    
+
     public override void SetApplicationId(string bundleId)
     {
       _NAR_ARDKGlobalConfigHelperInternal_SetDataField((uint)_ConfigDataField.ApplicationId, bundleId);
@@ -141,15 +146,19 @@ namespace Niantic.ARDK.Configuration
 
     public override string GetPlatform()
     {
-#if UNITY_EDITOR
-      return Application.unityVersion;
-#else
+      if (gettingPlatformFirstTime)
+      {
+        gettingPlatformFirstTime = false;
+#if UNITY_EDITOR 
+        SetUnityVersion(Application.unityVersion);
+#endif
+      }
+
       var stringBuilder = new StringBuilder(512);
       _NAR_ARDKGlobalConfigHelper_GetDataField((uint)_ConfigDataField.Platform, stringBuilder, (ulong)stringBuilder.Capacity);
 
       var result = stringBuilder.ToString();
       return result;
-#endif
     }
 
     public override string GetManufacturer()
@@ -226,20 +235,30 @@ namespace Niantic.ARDK.Configuration
       return result;
     }
     
-    // Keep this synchronized with ardk_global_config_helper.hpp
-    private enum _ConfigDataField : uint
+    public override string GetTelemetryKey()
     {
-      ApplicationId = 1,
-      Platform,
-      Manufacturer,
-      DeviceModel,
-      UserId,
-      ClientId,
-      DeveloperId,
-      ArdkVersion,
-      ArdkAppInstanceId
-    } 
+      StringBuilder stringBuilder = new StringBuilder(_TelemetryKeyMaxLength);
+      _NAR_ARDKGlobalConfigHelper_GetTelemetryKey(stringBuilder, stringBuilder.Capacity);
+      
+      var key = stringBuilder.ToString();
+      return key;
+    }
+
+
+    public override ARClientEnvelope.Types.AgeLevel GetAgeLevel()
+    {
+      var ageLevel = _NAR_ARDKGlobalConfigHelper_GetAgeLevel();
+      return (ARClientEnvelope.Types.AgeLevel)ageLevel;
+    }
     
+    public void SetUnityVersion(string unityVersion)
+    {
+      _NAR_ARDKGlobalConfigHelper_SetGameEngineVersion(unityVersion);
+    }
+
+    [DllImport(_ARDKLibrary.libraryName)]
+    private static extern int _NAR_ARDKGlobalConfigHelper_GetAgeLevel();
+
     // Switch to using a protobuf to pass data back and forth when that is solidified.
     // This is a bit fragile for now
     [DllImport(_ARDKLibrary.libraryName)]
@@ -275,12 +294,12 @@ namespace Niantic.ARDK.Configuration
     // Set Api Key
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern bool _NAR_ARDKGlobalConfigHelper_SetApiKey(string key);
-    
+
     // Set Auth URL
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern bool _NAR_ARDKGlobalConfigHelper_SetAuthURL(string key);
-    
-    // Attempt to validate the specified feature, with a previously set Api Key. 
+
+    // Attempt to validate the specified feature, with a previously set Api Key.
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern Int32 _NAR_ARDKGlobalConfigHelper_ValidateApiKeyWithFeature(string feature, bool isAsync);
 
@@ -291,7 +310,7 @@ namespace Niantic.ARDK.Configuration
       StringBuilder outKey,
       ulong maxKeySize
     );
-    
+
     // Get last known jwt token
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern void _NAR_ARDKGlobalConfigHelper_GetJwtToken
@@ -302,5 +321,26 @@ namespace Niantic.ARDK.Configuration
 
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern bool _NAR_ARDKGlobalConfigHelper_SetUserId(string userId);
+    
+        
+    [DllImport(_ARDKLibrary.libraryName)]
+    private static extern void _NAR_ARDKGlobalConfigHelper_GetTelemetryKey(StringBuilder outKey, int maxSize);
+
+    [DllImport(_ARDKLibrary.libraryName)]
+    private static extern void _NAR_ARDKGlobalConfigHelper_SetGameEngineVersion(string unityVersion);
+    
+    // Keep this synchronized with ardk_global_config_helper.hpp
+    private enum _ConfigDataField : uint
+    {
+      ApplicationId = 1,
+      Platform,
+      Manufacturer,
+      DeviceModel,
+      UserId,
+      ClientId,
+      DeveloperId,
+      ArdkVersion,
+      ArdkAppInstanceId
+    }
   }
 }

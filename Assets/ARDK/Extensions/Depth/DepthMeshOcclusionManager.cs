@@ -2,20 +2,6 @@
 
 using System;
 
-using Niantic.ARDK.AR.Awareness.Depth;
-using Niantic.ARDK.AR.Awareness.Semantics;
-
-using Niantic.ARDK.AR;
-
-using Niantic.ARDK.AR.Awareness;
-using Niantic.ARDK.AR.Awareness.Depth.Effects;
-using Niantic.ARDK.AR.Depth;
-using Niantic.ARDK.AR.Depth.Effects;
-using Niantic.ARDK.Internals.EditorUtilities;
-using Niantic.ARDK.Utilities.Logging;
-
-using UnityEngine;
-
 namespace Niantic.ARDK.Extensions.Depth
 {
   /// <summary>

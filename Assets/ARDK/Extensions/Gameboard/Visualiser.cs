@@ -108,8 +108,15 @@ namespace Niantic.ARDK.Extensions.Gameboard
       debugMeshGameObject.transform.SetParent(_visualRoot.transform, false);
       debugMeshGameObject.name = "GameboardDebug";
       MeshRenderer renderer = debugMeshGameObject.AddComponent<MeshRenderer>();
-      renderer.material.color = Color.green;
+      
+      #if ARDK_HAS_URP
+      renderer.material.shader = Shader.Find("Universal Render Pipeline/Unlit");
+      #else
       renderer.material.shader = Shader.Find("Unlit/Color");
+      #endif
+      
+      renderer.material.color = Color.green;
+      
       _meshFilter = debugMeshGameObject.AddComponent<MeshFilter>();
       _meshFilter.mesh.MarkDynamic();
     }

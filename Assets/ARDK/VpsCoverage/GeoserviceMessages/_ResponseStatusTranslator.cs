@@ -23,13 +23,13 @@ namespace Niantic.ARDK.VPSCoverage.GeoserviceMessages
       return result;
     }
     
-    public static ResponseStatus FromHttpStatus(UnityWebRequest.Result httpStatus, long errorCode)
+    public static ResponseStatus FromHttpStatus(UnityWebRequest.Result httpRequestProgressStatus, long httpStatusCode)
     {
-      Enum.TryParse(httpStatus.ToString(), out ResponseStatus responseStatus);
+      Enum.TryParse(httpRequestProgressStatus.ToString(), out ResponseStatus responseStatus);
       
       if (responseStatus == ResponseStatus.ProtocolError)
       {
-        Enum.TryParse(errorCode.ToString(), out responseStatus);
+        Enum.TryParse(httpStatusCode.ToString(), out responseStatus);
       }
       
       return responseStatus;

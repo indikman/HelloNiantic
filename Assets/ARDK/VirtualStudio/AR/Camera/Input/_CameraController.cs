@@ -54,18 +54,13 @@ namespace Niantic.ARDK.VirtualStudio.AR.Camera.Input
     {
       if (Mouse.current.scroll.ReadValue().magnitude > 0.01f) // not sure why but if this is 0, the camera tracks the mouse cursor.
       {
-          var mouseScrollDelta = 
-              new Vector2
-              (
-                  currentMouse.scroll.x.ReadValue(), 
-                  currentMouse.scroll.y.ReadValue()
-              );
-
-          Rotate
-          (
-              direction:mouseScrollDelta * _MockCameraConfiguration.ScrollDirection,
-              speed:_MockCameraConfiguration.LookSpeed / 10
-          );
+        var mouseScrollDelta = new Vector2(-currentMouse.scroll.x.ReadValue(), currentMouse.scroll.y.ReadValue());
+        
+        Rotate
+        (
+            direction:mouseScrollDelta * _MockCameraConfiguration.ScrollDirection,
+            speed:_MockCameraConfiguration.LookSpeed / 10
+        );
       }
     }
 

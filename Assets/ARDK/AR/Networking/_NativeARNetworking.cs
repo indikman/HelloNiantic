@@ -137,7 +137,7 @@ namespace Niantic.ARDK.AR.Networking
 
     private void FinishInitialization()
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
       {
         ARLog._DebugFormat("Creating _NativeARNetworking");
 
@@ -213,7 +213,7 @@ namespace Niantic.ARDK.AR.Networking
         }
       }
 
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native && _nativeHandle != IntPtr.Zero)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native && _nativeHandle != IntPtr.Zero)
       {
         _NARARMultipeerNetworking_Release(_nativeHandle);
         _nativeHandle = IntPtr.Zero;
@@ -230,19 +230,19 @@ namespace Niantic.ARDK.AR.Networking
 
     public void EnablePoseBroadcasting()
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
         _NARARMultipeerNetworking_EnablePoseBroadcasting(_nativeHandle);
     }
 
     public void DisablePoseBroadcasting()
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
         _NARARMultipeerNetworking_DisablePoseBroadcasting(_nativeHandle);
     }
 
     public void SetTargetPoseLatency(Int64 targetPoseLatency)
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
         _NARARMultipeerNetworking_SetTargetPoseLatency(_nativeHandle, targetPoseLatency);
     }
 
@@ -380,7 +380,7 @@ namespace Niantic.ARDK.AR.Networking
       if (arNetworking._networking == null)
         return true;
 
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
       {
         if (arNetworking._networking is _NativeMultipeerNetworking nativeNetworking)
         {
@@ -405,7 +405,7 @@ namespace Niantic.ARDK.AR.Networking
     private static IPeer _GetPeerFromHandle(IntPtr handle)
     {
 #pragma warning disable CS0162
-      if (NativeAccess.Mode == NativeAccess.ModeType.Testing)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Testing)
       {
         return _TestingShim._GetPeerFromTestingHandle(handle);
       }
@@ -423,7 +423,7 @@ namespace Niantic.ARDK.AR.Networking
 
       internal static IPeer _GetPeerFromTestingHandle(IntPtr handle)
       {
-        if (NativeAccess.Mode != NativeAccess.ModeType.Testing)
+        if (_NativeAccess.Mode != _NativeAccess.ModeType.Testing)
           return null;
 #pragma warning disable CS0162
         var index = handle.ToInt32();
@@ -439,7 +439,7 @@ namespace Niantic.ARDK.AR.Networking
         IPeer peer
       )
       {
-        if (NativeAccess.Mode != NativeAccess.ModeType.Testing)
+        if (_NativeAccess.Mode != _NativeAccess.ModeType.Testing)
           return;
 #pragma warning disable CS0162
         if (_peerLookup == null)
@@ -463,7 +463,7 @@ namespace Niantic.ARDK.AR.Networking
         IPeer peer
       )
       {
-        if (NativeAccess.Mode != NativeAccess.ModeType.Testing)
+        if (_NativeAccess.Mode != _NativeAccess.ModeType.Testing)
           return;
 #pragma warning disable CS0162
         if (_peerLookup == null)
@@ -526,7 +526,7 @@ namespace Niantic.ARDK.AR.Networking
       if (_didReceivePoseFromPeerInitialized)
         return;
 
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
       {
         _NARARMultipeerNetworking_Set_didReceivePoseFromPeerCallback
         (
@@ -617,7 +617,7 @@ namespace Niantic.ARDK.AR.Networking
       if (_didReceiveStateFromPeerInitialized)
         return;
 
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
       {
         _NARARMultipeerNetworking_Set_didReceiveStateFromPeerCallback
         (

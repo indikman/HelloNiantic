@@ -195,7 +195,7 @@ namespace Niantic.ARDK.Rendering
     ///               automatically get updated for each frame.
     protected ARFrameRenderer(RenderTarget target)
     {
-      _originalOrientation = RenderTarget.ScreenOrientation;
+      _originalOrientation = MathUtils.CalculateScreenOrientation();
 
       Target = target;
       Resolution = target.GetResolution(_originalOrientation);
@@ -217,7 +217,7 @@ namespace Niantic.ARDK.Rendering
     /// @param far The distance of the far clipping plane.
     protected ARFrameRenderer(RenderTarget target, float near, float far)
     {
-      _originalOrientation = RenderTarget.ScreenOrientation;
+      _originalOrientation = MathUtils.CalculateScreenOrientation();
 
       Target = target;
       Resolution = target.GetResolution(_originalOrientation);
@@ -502,9 +502,10 @@ namespace Niantic.ARDK.Rendering
     private void UpdateCameraMatrices(IARFrame frame)
     {
       // Determine target orientation
-      var targetOrientation = IsOrientationLocked
-        ? _originalOrientation
-        : RenderTarget.ScreenOrientation;
+      var targetOrientation =
+        IsOrientationLocked
+          ? _originalOrientation
+          : MathUtils.CalculateScreenOrientation();
 
       // Calculate the target resolution according to the orientation
       var targetResolution = Target.GetResolution(targetOrientation);

@@ -6,6 +6,9 @@ namespace Niantic.ARDK.Configuration
 {
   internal interface _IArdkConfig
   {
+    
+    string GetTelemetryKey();
+
     /// Set the user id associated with the current user.
     bool SetUserIdOnLogin(string userId);
     

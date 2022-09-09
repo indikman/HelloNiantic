@@ -51,7 +51,7 @@ namespace Niantic.ARDK.AR.ReferenceImage
       Orientation orientation = Orientation.Up
     )
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
       {
         var result =
           _NARReferenceImage_Init
@@ -111,7 +111,7 @@ namespace Niantic.ARDK.AR.ReferenceImage
       Orientation orientation = Orientation.Up
     )
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
       {
         var result =
           _NARReferenceImage_InitWithJPG
@@ -165,7 +165,7 @@ namespace Niantic.ARDK.AR.ReferenceImage
       {
         rawBytes = _ReadBytesFromFile(filePath);
 
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+        if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
         {
           var result =
             _NARReferenceImage_InitWithJPG
@@ -228,7 +228,7 @@ namespace Niantic.ARDK.AR.ReferenceImage
       Orientation orientation = Orientation.Up
     )
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
       {
         if (orientation != Orientation.Up)
           throw new Exception("ARReferenceImage only supports Orientation.Up at the moment");
@@ -285,7 +285,7 @@ namespace Niantic.ARDK.AR.ReferenceImage
       Orientation orientation = Orientation.Up
     )
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
       {
         _NARReferenceImage_CreateAsyncWithJPG
         (
@@ -335,7 +335,7 @@ namespace Niantic.ARDK.AR.ReferenceImage
       {
         rawBytes = _ReadBytesFromFile(filePath);
 
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+        if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
         {
           _NARReferenceImage_CreateAsyncWithJPG
           (

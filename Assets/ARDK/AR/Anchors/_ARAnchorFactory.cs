@@ -25,7 +25,7 @@ namespace Niantic.ARDK.AR.Anchors
 
     private static IARAnchor _CreateForPlatform(Matrix4x4 transform)
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
       {
         var nativeTransform = _Convert.Matrix4x4ToInternalArray(NARConversions.FromUnityToNAR(transform));
 
@@ -98,13 +98,13 @@ namespace Niantic.ARDK.AR.Anchors
     {
       AnchorType anchorType;
 
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
         anchorType = (AnchorType)_NARAnchor_GetAnchorType(nativeHandle);
       #pragma warning disable 0162
       else
         anchorType = _testOnly_DefaultAnchorType;
       #pragma warning restore 0162
-      
+
       switch (anchorType)
       {
         case AnchorType.Basic: return new _NativeARBasicAnchor(nativeHandle);
@@ -132,7 +132,7 @@ namespace Niantic.ARDK.AR.Anchors
     private static IntPtr _GetCppAddress(IntPtr nativeHandle)
     {
 #pragma warning disable 0162
-      if (NativeAccess.Mode != NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode != _NativeAccess.ModeType.Native)
         return nativeHandle;
 #pragma warning restore 0162
 

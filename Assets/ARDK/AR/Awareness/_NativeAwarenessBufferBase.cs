@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Niantic.ARDK.AR.Awareness
 {
-  internal abstract class _NativeAwarenessBufferBase<T>: 
+  internal abstract class _NativeAwarenessBufferBase<T>:
     _AwarenessBufferBase,
     IDataBuffer<T>,
     IDisposable
@@ -27,7 +27,11 @@ namespace Niantic.ARDK.AR.Awareness
     private long _consumedUnmanagedMemory;
     private Matrix4x4? _cacheViewMatrix = null;
     private CameraIntrinsics? _cachedIntrinsics = null;
+
     private NativeArray<T> _data;
+#if UNITY_EDITOR
+    private AtomicSafetyHandle? _safetyHandle;
+#endif
 
     protected _NativeAwarenessBufferBase
     (
@@ -40,6 +44,8 @@ namespace Niantic.ARDK.AR.Awareness
     )
       : base(width, height, isKeyframe, intrinsics)
     {
+      _NativeAccess.AssertNativeAccessValid();
+
       _worldScale = worldScale;
       _nativeHandle = handle;
 
@@ -61,8 +67,18 @@ namespace Niantic.ARDK.AR.Awareness
           if (!_data.IsCreated)
           {
             UInt32 size = Width * Height;
-            _data = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>
-              (_GetDataAddress().ToPointer(), (int)size, Allocator.None);
+            _data =
+              NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>
+              (
+                _GetDataAddress().ToPointer(),
+                (int)size,
+                Allocator.None
+              );
+
+#if UNITY_EDITOR
+            _safetyHandle = AtomicSafetyHandle.Create();
+            NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref _data, _safetyHandle.Value);
+#endif
           }
 
           return _data;
@@ -134,6 +150,13 @@ namespace Niantic.ARDK.AR.Awareness
         GC.SuppressFinalize(this);
         GC.RemoveMemoryPressure(_consumedUnmanagedMemory);
         _nativeHandle = IntPtr.Zero;
+
+#if UNITY_EDITOR
+        if (_safetyHandle.HasValue)
+          AtomicSafetyHandle.Release(_safetyHandle.Value);
+
+        _safetyHandle = null;
+#endif
       }
     }
 

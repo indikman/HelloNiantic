@@ -1,4 +1,7 @@
 // Copyright 2022 Niantic, Inc. All Rights Reserved.
+
+using Niantic.ARDK.VirtualStudio;
+
 namespace Niantic.ARDK.AR.WayspotAnchors
 {
   /// Class factory for [WayspotAnchorsConfiguration]
@@ -8,12 +11,29 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     /// Initializes a new instance of the WayspotAnchorsConfiguration class.
     public static IWayspotAnchorsConfiguration Create()
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
-        return new _NativeWayspotAnchorsConfiguration();
+      return Create(_VirtualStudioLauncher.SelectedMode);
+    }
 
-#pragma warning disable 0162
-      return new _SerializableWayspotAnchorsConfiguration();
-#pragma warning restore 0162
+    /// Create an WayspotAnchorsConfiguration for the specified RuntimeEnvironment.
+    ///
+    /// @param env
+    ///
+    /// @returns The created configuration, or null if it was not possible to create a configuration.
+    public static IWayspotAnchorsConfiguration Create(RuntimeEnvironment environment)
+    {
+      switch (environment)
+      {
+        case RuntimeEnvironment.LiveDevice:
+          return new _NativeWayspotAnchorsConfiguration();
+
+        case RuntimeEnvironment.Playback:
+          return new _NativeWayspotAnchorsConfiguration();
+
+        case RuntimeEnvironment.Mock:
+          return new _SerializableWayspotAnchorsConfiguration();
+      }
+
+      return null;
     }
   }
 }

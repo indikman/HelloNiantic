@@ -1,12 +1,13 @@
 // Copyright 2022 Niantic, Inc. All Rights Reserved.
 using Niantic.ARDK.AR.ARSessionEventArgs;
 using Niantic.ARDK.Rendering;
+using Niantic.ARDK.Utilities;
 
 using UnityEngine;
 
 namespace Niantic.ARDK.AR.Awareness.Depth
 {
-  public class DepthBufferProcessor: 
+  public class DepthBufferProcessor:
     AwarenessBufferProcessor<IDepthBuffer>,
     IDepthBufferProcessor
   {
@@ -25,7 +26,7 @@ namespace Niantic.ARDK.AR.Awareness.Depth
       _viewport = UnityEngine.Camera.main;
       ARSessionFactory.SessionInitialized += OnARSessionInitialized;
     }
-    
+
     /// Allocates a new depth buffer processor.
     /// @param viewport Determines the target viewport to fit the awareness buffer to.
     public DepthBufferProcessor(RenderTarget viewport)
@@ -43,7 +44,7 @@ namespace Niantic.ARDK.AR.Awareness.Depth
     {
       get => AwarenessBuffer?.FarDistance ?? float.PositiveInfinity;
     }
-    
+
     /// Assigns a new render target descriptor for the depth processor.
     /// The render target defines the viewport attributes to correctly
     /// fit the depth buffer.
@@ -61,7 +62,7 @@ namespace Niantic.ARDK.AR.Awareness.Depth
 
       var x = viewportX + 0.5f;
       var y = viewportY + 0.5f;
-      var resolution = _viewport.GetResolution(RenderTarget.ScreenOrientation);
+      var resolution = _viewport.GetResolution(MathUtils.CalculateScreenOrientation());
       var uv = new Vector4(x / resolution.width, y / resolution.height, 1.0f, 1.0f);
 
       // Sample the depth buffer
@@ -77,7 +78,7 @@ namespace Niantic.ARDK.AR.Awareness.Depth
 
       var x = viewportX + 0.5f;
       var y = viewportY + 0.5f;
-      var resolution = _viewport.GetResolution(RenderTarget.ScreenOrientation);
+      var resolution = _viewport.GetResolution(MathUtils.CalculateScreenOrientation());
       var uv = new Vector4(x / resolution.width, y / resolution.height, 1.0f, 1.0f);
 
       // Sample the depth buffer
@@ -99,7 +100,7 @@ namespace Niantic.ARDK.AR.Awareness.Depth
 
       var x = viewportX + 0.5f;
       var y = viewportY + 0.5f;
-      var resolution = _viewport.GetResolution(RenderTarget.ScreenOrientation);
+      var resolution = _viewport.GetResolution(MathUtils.CalculateScreenOrientation());
       var uv = new Vector4(x / resolution.width, y / resolution.height, 1.0f, 1.0f);
 
       // Sample the depth buffer
@@ -121,7 +122,7 @@ namespace Niantic.ARDK.AR.Awareness.Depth
       if (depthBuffer == null)
         return Vector3.up;
 
-      var resolution = _viewport.GetResolution(RenderTarget.ScreenOrientation);
+      var resolution = _viewport.GetResolution(MathUtils.CalculateScreenOrientation());
       var viewportMax = Mathf.Max(resolution.width, resolution.height);
       var bufferMax = Mathf.Max((int)depthBuffer.Width, (int)depthBuffer.Height);
       var viewportDelta = Mathf.CeilToInt((float)viewportMax / bufferMax) + 1;
@@ -133,14 +134,14 @@ namespace Niantic.ARDK.AR.Awareness.Depth
 
       return Vector3.Cross(a - b, c - a).normalized;
     }
-    
+
     public void CopyToAlignedTextureARGB32(ref Texture2D texture, ScreenOrientation orientation)
     {
       // Get a typed buffer
       IDepthBuffer depthBuffer = AwarenessBuffer;
       float max = depthBuffer.FarDistance;
       float min = depthBuffer.NearDistance;
-      
+
       // Acquire the affine transform for the buffer
       var transform = SamplerTransform;
 
@@ -149,23 +150,23 @@ namespace Niantic.ARDK.AR.Awareness.Depth
       (
         ref texture,
         orientation,
-        
+
         // The sampler function needs to be defined such that given a destination
         // texture coordinate, what color needs to be written to that position?
         sampler: uv =>
         {
           // Sample raw depth from the buffer
           var depth = depthBuffer.Sample(uv, transform);
-          
+
           // Normalize depth
           var val = (depth - min) / (max - min);
-          
+
           // Copy to value to color channels
           return new Color(val, val, val, 1.0f);
         }
       );
     }
-    
+
     public void CopyToAlignedTextureRFloat(ref Texture2D texture, ScreenOrientation orientation)
     {
       // Get a typed buffer
@@ -179,7 +180,7 @@ namespace Niantic.ARDK.AR.Awareness.Depth
       (
         ref texture,
         orientation,
-        
+
         // The sampler function needs to be defined such that given a destination
         // texture coordinate, what value needs to be written to that position?
         sampler: uv => depthBuffer.Sample(uv, transform)
@@ -213,8 +214,8 @@ namespace Niantic.ARDK.AR.Awareness.Depth
       if (frame == null)
         return;
 
-      var orientation = RenderTarget.ScreenOrientation;
-      
+      var orientation = MathUtils.CalculateScreenOrientation();
+
       _ProcessFrame
       (
         frame,

@@ -21,10 +21,10 @@ namespace Niantic.ARDK.AR.Frame
   {
     internal static _SerializableARFrame _AsSerializable
     (
-      this IARFrame source, 
-      bool includeImageBuffers = true, 
+      this IARFrame source,
+      bool includeImageBuffers = true,
       bool includeAwarenessBuffers = true,
-      int compressionLevel = 70, 
+      int compressionLevel = 70,
       bool includeFeaturePoints = false
     )
     {
@@ -35,7 +35,7 @@ namespace Niantic.ARDK.AR.Frame
         return possibleResult;
 
       var serializedFrame = NewSerializableFrameWithoutBuffers(source);
-      
+
       if (includeImageBuffers)
       {
         var imageBuffer = source.CapturedImageBuffer;
@@ -68,14 +68,6 @@ namespace Niantic.ARDK.AR.Frame
         select anchor._AsSerializable()
       ).ToArray();
 
-      var estimatedDisplayTransform =
-        source.CalculateDisplayTransform
-        (
-          Screen.orientation,
-          Screen.width,
-          Screen.height
-        );
-
       var serializableMaps =
       (
         from map in source.Maps
@@ -92,8 +84,7 @@ namespace Niantic.ARDK.AR.Frame
           source.LightEstimate._AsSerializable(),
           serializedAnchors.AsNonNullReadOnly<IARAnchor>(),
           serializableMaps,
-          source.WorldScale,
-          estimatedDisplayTransform
+          source.WorldScale
         );
     }
   }

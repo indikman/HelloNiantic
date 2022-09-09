@@ -11,7 +11,7 @@ using UnityEngine;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace ARDK.Assets.ARDK.Extensions.Meshing
+namespace Niantic.ARDK.Extensions.Meshing
 {
     public class MeshObjSaver: MonoBehaviour
     {

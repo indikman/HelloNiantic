@@ -32,7 +32,17 @@ namespace Niantic.ARDK.VirtualStudio.AR.Camera.Input
     private void RotateScroll()
     {
       var scrollSpeed = _MockCameraConfiguration.LookSpeed / 2;
-      var mouseScrollVector = UnityEngine.Input.mouseScrollDelta * _MockCameraConfiguration.ScrollDirection;
+
+      Vector2 mouseScrollVector = Vector2.zero;
+      
+      #if UNITY_EDITOR_WIN
+      float xScrollDelta = -1 * UnityEngine.Input.mouseScrollDelta.x * _MockCameraConfiguration.ScrollDirection;
+      float yScrollDelta = UnityEngine.Input.mouseScrollDelta.y * _MockCameraConfiguration.ScrollDirection;
+      mouseScrollVector = new Vector2(xScrollDelta, yScrollDelta);
+      #elif UNITY_EDITOR_OSX
+      mouseScrollVector = UnityEngine.Input.mouseScrollDelta * _MockCameraConfiguration.ScrollDirection;
+      #endif
+      
       Rotate(mouseScrollVector, scrollSpeed);
     }
 

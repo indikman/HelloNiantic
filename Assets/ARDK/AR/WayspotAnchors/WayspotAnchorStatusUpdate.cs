@@ -1,9 +1,12 @@
 // Copyright 2022 Niantic, Inc. All Rights Reserved.
 using System;
 
+using Niantic.ARDK.Utilities;
+
 namespace Niantic.ARDK.AR.WayspotAnchors
 {
-  public class WayspotAnchorStatusUpdate
+  public class WayspotAnchorStatusUpdate:
+    IArdkEventArgs
   {
     /// The ID of the wayspot anchor
     public Guid ID { get; }

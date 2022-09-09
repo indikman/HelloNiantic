@@ -2,9 +2,8 @@
 
 using Niantic.ARDK.AR;
 using Niantic.ARDK.AR.ARSessionEventArgs;
-using Niantic.ARDK.AR.Frame;
-using Niantic.ARDK.Internals.EditorUtilities;
 using Niantic.ARDK.Utilities;
+using Niantic.ARDK.Utilities.Editor;
 
 using UnityEngine;
 using UnityEngine.Serialization;

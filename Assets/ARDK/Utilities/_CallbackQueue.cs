@@ -96,6 +96,9 @@ namespace Niantic.ARDK.Utilities
       lock (_callbackQueue)
         _callbackQueue.Enqueue(callback);
     }
+    
+    internal static event Action AppStarted;
+    internal static event Action AppStopped;
 
     internal static event Action ApplicationWillQuit;
     internal static event Action ApplicationGainedFocus;
@@ -124,7 +127,6 @@ namespace Niantic.ARDK.Utilities
         ApplicationLostFocus?.Invoke();
     }
 
-
     private void OnApplicationPause(bool pauseStatus)
     {
       if (pauseStatus)
@@ -133,11 +135,21 @@ namespace Niantic.ARDK.Utilities
         ApplicationUnpaused?.Invoke();
     }
 
+    private void Awake()
+    {
+      AppStarted?.Invoke();
+    }
+    
+    private void OnDisable()
+    {
+      AppStopped?.Invoke();
+    }
+
     private void OnApplicationQuit()
     {
       if (_isApplicationQuitting)
       {
-        // Prevents the multiple invokations of this method that are happening for some reason
+        // Prevents the multiple invocations of this method that are happening for some reason
         return;
       }
 
@@ -151,7 +163,7 @@ namespace Niantic.ARDK.Utilities
     {
       if (_isApplicationQuitting)
       {
-        // Prevents the multiple invokations of this method that are happening for some reason
+        // Prevents the multiple invocations of this method that are happening for some reason
         return;
       }
 

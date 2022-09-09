@@ -54,7 +54,7 @@ namespace Niantic.ARDK.Utilities
           response = default;
 
         return new _HttpResponse<TResponse>
-          (_ResponseStatusTranslator.FromHttpStatus(webRequest.result, webRequest.responseCode), response);
+          (_ResponseStatusTranslator.FromHttpStatus(webRequest.result, webRequest.responseCode), response, webRequest.responseCode);
       }
     }
 
@@ -79,10 +79,13 @@ namespace Niantic.ARDK.Utilities
     public ResponseStatus Status { get; set; }
     public TResponse Data { get; }
 
-    public _HttpResponse(ResponseStatus status, TResponse data)
+    public long HttpStatusCode { get; }
+
+    public _HttpResponse(ResponseStatus status, TResponse data, long httpStatusCode)
     {
       Status = status;
       Data = data;
+      HttpStatusCode = httpStatusCode;
     }
   }
 

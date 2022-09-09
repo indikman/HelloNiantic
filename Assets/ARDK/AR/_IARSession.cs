@@ -11,7 +11,5 @@ namespace Niantic.ARDK.AR
 
     /// Gets how this session will transition the AR state when re-run.
     ARSessionRunOptions RunOptions { get; }
-
-    bool IsPlayback { get; }
   }
 }

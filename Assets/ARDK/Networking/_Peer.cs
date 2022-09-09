@@ -54,7 +54,7 @@ namespace Niantic.ARDK.Networking
     {
       // Do not call into native if this is run during testing
 #pragma warning disable CS0162
-      if (NativeAccess.Mode == NativeAccess.ModeType.Testing)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Testing)
         return;
 #pragma warning restore CS0162
 

@@ -3,11 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Niantic.ARDK;
 using Niantic.ARDK.AR;
 using Niantic.ARDK.AR.ARSessionEventArgs;
 using Niantic.ARDK.AR.HitTest;
 using Niantic.ARDK.AR.WayspotAnchors;
+using Niantic.ARDK.Extensions;
 using Niantic.ARDK.LocationService;
+using Niantic.ARDK.Utilities;
 using Niantic.ARDK.Utilities.Input.Legacy;
 
 using UnityEngine;
@@ -35,17 +38,18 @@ namespace Niantic.ARDKExamples.WayspotAnchors
 
     private WayspotAnchorService _wayspotAnchorService;
     private IARSession _arSession;
-    private LocalizationState _localizationState;
 
-    private readonly Dictionary<Guid, GameObject> _wayspotAnchorGameObjects =
-      new Dictionary<Guid, GameObject>();
+    private readonly HashSet<WayspotAnchorTracker> _wayspotAnchorTrackers =
+      new HashSet<WayspotAnchorTracker>();
+
+    private IWayspotAnchorsConfiguration _config;
 
     private void Awake()
     {
-      // This is necessary for setting the user id associated with the current user. 
+      // This is necessary for setting the user id associated with the current user.
       // We strongly recommend generating and using User IDs. Accurate user information allows
       //  Niantic to support you in maintaining data privacy best practices and allows you to
-      //  understand usage patterns of features among your users.  
+      //  understand usage patterns of features among your users.
       // ARDK has no strict format or length requirements for User IDs, although the User ID string
       //  must be a UTF8 string. We recommend avoiding using an ID that maps back directly to the
       //  user. So, for example, don’t use email addresses, or login IDs. Instead, you should
@@ -54,7 +58,7 @@ namespace Niantic.ARDKExamples.WayspotAnchors
 
       //  Sample code:
       //  // GetCurrentUserId() is your code that gets a user ID string from your login service
-      //  var userId = GetCurrentUserId(); 
+      //  var userId = GetCurrentUserId();
       //  ArdkGlobalConfig.SetUserIdOnLogin(userId);
 
       _statusLog.text = "Initializing Session.";
@@ -65,36 +69,6 @@ namespace Niantic.ARDKExamples.WayspotAnchors
       ARSessionFactory.SessionInitialized += HandleSessionInitialized;
     }
 
-    private void Update()
-    {
-      if (_wayspotAnchorService == null)
-      {
-        return;
-      }
-      //Get the pose where you tap on the screen
-      var success = TryGetTouchInput(out Matrix4x4 localPose);
-      if (_wayspotAnchorService.LocalizationState == LocalizationState.Localized)
-      {
-        if (success) //Check is screen tap was a valid tap
-        {
-          PlaceAnchor(localPose); //Create the Wayspot Anchor and place the GameObject
-        }
-      }
-      else
-      {
-        if (success) //Check is screen tap was a valid tap
-        {
-          _statusLog.text = "Must localize before placing anchor.";
-        }
-        if(_localizationState != _wayspotAnchorService.LocalizationState)
-        {
-          _wayspotAnchorGameObjects.Values.ToList().ForEach(a => a.SetActive(false));
-        }
-      }
-      _localizationStatus.text = _wayspotAnchorService.LocalizationState.ToString();
-      _localizationState = _wayspotAnchorService.LocalizationState;
-    }
-
     private void OnDisable()
     {
       ARSessionFactory.SessionInitialized -= HandleSessionInitialized;
@@ -102,13 +76,34 @@ namespace Niantic.ARDKExamples.WayspotAnchors
 
     private void OnDestroy()
     {
-      _wayspotAnchorService.Dispose();
+      if (_wayspotAnchorService != null)
+      {
+        _wayspotAnchorService.LocalizationStateUpdated -= LocalizationStateUpdated;
+        _wayspotAnchorService.Dispose();
+      }
+    }
+
+    private void Update()
+    {
+      if (_wayspotAnchorService == null)
+        return;
+
+      // Do hit test from where player taps on screen
+      var touchSuccess = TryGetTouchInput(out Matrix4x4 localPose);
+
+      if (touchSuccess)
+      {
+        if (_wayspotAnchorService.LocalizationState == LocalizationState.Localized)
+          PlaceAnchor(localPose); //Create the Wayspot Anchor and place the GameObject
+        else
+          _statusLog.text = "Must localize before placing anchor.";
+      }
     }
 
     /// Saves all of the existing wayspot anchors
     public void SaveWayspotAnchors()
     {
-      if (_wayspotAnchorGameObjects.Count > 0)
+      if (_wayspotAnchorTrackers.Count > 0)
       {
         var wayspotAnchors = _wayspotAnchorService.GetAllWayspotAnchors();
         var payloads = wayspotAnchors.Select(a => a.Payload);
@@ -119,24 +114,25 @@ namespace Niantic.ARDKExamples.WayspotAnchors
         WayspotAnchorDataUtility.SaveLocalPayloads(Array.Empty<WayspotAnchorPayload>());
       }
 
-      _statusLog.text = "Saved Wayspot Anchors.";
+      _statusLog.text = $"Saved {_wayspotAnchorTrackers.Count} Wayspot Anchors.";
     }
 
     /// Loads all of the saved wayspot anchors
     public void LoadWayspotAnchors()
     {
-      if (_wayspotAnchorService.LocalizationState != LocalizationState.Localized)
-      {
-        _statusLog.text = "Must localize before loading anchors.";
-        return;
-      }
-
       var payloads = WayspotAnchorDataUtility.LoadLocalPayloads();
       if (payloads.Length > 0)
       {
-        var wayspotAnchors = _wayspotAnchorService.RestoreWayspotAnchors(payloads);
-        CreateAnchorGameObjects(wayspotAnchors);
-        _statusLog.text = "Loaded Wayspot Anchors.";
+        foreach (var payload in payloads)
+        {
+          var anchors = _wayspotAnchorService.RestoreWayspotAnchors(payload);
+          if (anchors.Length == 0)
+            return; // error raised in CreateWayspotAnchors
+
+          CreateWayspotAnchorGameObject(anchors[0], Vector3.zero, Quaternion.identity, false);
+        }
+
+        _statusLog.text = $"Loaded {_wayspotAnchorTrackers.Count} anchors.";
       }
       else
       {
@@ -147,23 +143,22 @@ namespace Niantic.ARDKExamples.WayspotAnchors
     /// Clears all of the active wayspot anchors
     public void ClearAnchorGameObjects()
     {
-      if (_wayspotAnchorGameObjects.Count == 0)
+      if (_wayspotAnchorTrackers.Count == 0)
       {
         _statusLog.text = "No anchors to clear.";
         return;
       }
 
-      foreach (var anchor in _wayspotAnchorGameObjects)
-      {
-        Destroy(anchor.Value);
-      }
+      foreach (var anchor in _wayspotAnchorTrackers)
+        Destroy(anchor.gameObject);
 
-      _wayspotAnchorService.DestroyWayspotAnchors(_wayspotAnchorGameObjects.Keys.ToArray());
-      _wayspotAnchorGameObjects.Clear();
+      var wayspotAnchors = _wayspotAnchorTrackers.Select(go => go.WayspotAnchor).ToArray();
+      _wayspotAnchorService.DestroyWayspotAnchors(wayspotAnchors);
+
+      _wayspotAnchorTrackers.Clear();
       _statusLog.text = "Cleared Wayspot Anchors.";
     }
 
-    /// Pauses the AR Session
     public void PauseARSession()
     {
       if (_arSession.State == ARSessionState.Running)
@@ -177,7 +172,6 @@ namespace Niantic.ARDKExamples.WayspotAnchors
       }
     }
 
-    /// Resumes the AR Session
     public void ResumeARSession()
     {
       if (_arSession.State == ARSessionState.Paused)
@@ -191,70 +185,92 @@ namespace Niantic.ARDKExamples.WayspotAnchors
       }
     }
 
-    /// Restarts Wayspot Anchor Service
     public void RestartWayspotAnchorService()
     {
       _wayspotAnchorService.Restart();
     }
 
-    private void HandleSessionInitialized(AnyARSessionInitializedArgs anyARSessionInitializedArgs)
+    private void HandleSessionInitialized(AnyARSessionInitializedArgs args)
     {
-      _statusLog.text = "Running Session...";
-      _arSession = anyARSessionInitializedArgs.Session;
+      _statusLog.text = "Session initialized";
+      _arSession = args.Session;
       _arSession.Ran += HandleSessionRan;
     }
 
-    private void HandleSessionRan(ARSessionRanArgs arSessionRanArgs)
+    private void HandleSessionRan(ARSessionRanArgs args)
     {
       _arSession.Ran -= HandleSessionRan;
       _wayspotAnchorService = CreateWayspotAnchorService();
-      _statusLog.text = "Session Initialized.";
+      _wayspotAnchorService.LocalizationStateUpdated += OnLocalizationStateUpdated;
+      _statusLog.text = "Session running";
     }
 
-    private void PlaceAnchor(Matrix4x4 localPose)
+    private void OnLocalizationStateUpdated(LocalizationStateUpdatedArgs args)
     {
-      _wayspotAnchorService.CreateWayspotAnchors(CreateAnchorGameObjects, localPose);
-      // Alternatively, you can make this method async and create wayspot anchors using await:
-      // var wayspotAnchors = await _wayspotAnchorService.CreateWayspotAnchorsAsync(localPose);
-      // CreateAnchorGameObjects(wayspotAnchors);
-
-      _statusLog.text = "Anchor placed.";
+      _localizationStatus.text = "Localization status: " + args.State;
     }
 
     private WayspotAnchorService CreateWayspotAnchorService()
     {
-      var wayspotAnchorsConfiguration = WayspotAnchorsConfigurationFactory.Create();
-      
       var locationService = LocationServiceFactory.Create(_arSession.RuntimeEnvironment);
       locationService.Start();
 
-      var wayspotAnchorService = new WayspotAnchorService(_arSession, locationService, wayspotAnchorsConfiguration);
+      if (_config == null)
+        _config = WayspotAnchorsConfigurationFactory.Create();
+
+      var wayspotAnchorService =
+        new WayspotAnchorService
+        (
+          _arSession,
+          locationService,
+          _config
+        );
+
+      wayspotAnchorService.LocalizationStateUpdated += LocalizationStateUpdated;
+
       return wayspotAnchorService;
     }
 
-    private void CreateAnchorGameObjects(IWayspotAnchor[] wayspotAnchors)
+    private void LocalizationStateUpdated(LocalizationStateUpdatedArgs args)
     {
-      foreach (var wayspotAnchor in wayspotAnchors)
-      {
-        if (_wayspotAnchorGameObjects.ContainsKey(wayspotAnchor.ID))
-        {
-          continue;
-        }
-        wayspotAnchor.TrackingStateUpdated += HandleWayspotAnchorTrackingUpdated;
-        var id = wayspotAnchor.ID;
-        var anchor = Instantiate(_anchorPrefab);
-        anchor.SetActive(false);
-        anchor.name = $"Anchor {id}";
-        _wayspotAnchorGameObjects.Add(id, anchor);
-      }
+      _localizationStatus.text = args.State.ToString();
     }
 
-    private void HandleWayspotAnchorTrackingUpdated(WayspotAnchorResolvedArgs wayspotAnchorResolvedArgs)
+    private void PlaceAnchor(Matrix4x4 localPose)
     {
-      var anchor = _wayspotAnchorGameObjects[wayspotAnchorResolvedArgs.ID].transform;
-      anchor.position = wayspotAnchorResolvedArgs.Position;
-      anchor.rotation = wayspotAnchorResolvedArgs.Rotation;
-      anchor.gameObject.SetActive(true);
+      var anchors = _wayspotAnchorService.CreateWayspotAnchors(localPose);
+      if (anchors.Length == 0)
+        return; // error raised in CreateWayspotAnchors
+
+      var position = localPose.ToPosition();
+      var rotation = localPose.ToRotation();
+      CreateWayspotAnchorGameObject(anchors[0], position, rotation, true);
+
+      _statusLog.text = "Anchor placed.";
+    }
+
+    private GameObject CreateWayspotAnchorGameObject
+    (
+      IWayspotAnchor anchor,
+      Vector3 position,
+      Quaternion rotation,
+      bool startActive
+    )
+    {
+      var go = Instantiate(_anchorPrefab, position, rotation);
+
+      var tracker = go.GetComponent<WayspotAnchorTracker>();
+      if (tracker == null)
+      {
+        Debug.Log("Anchor prefab was missing WayspotAnchorTracker, so one will be added.");
+        tracker = go.AddComponent<WayspotAnchorTracker>();
+      }
+
+      tracker.gameObject.SetActive(startActive);
+      tracker.AttachAnchor(anchor);
+      _wayspotAnchorTrackers.Add(tracker);
+
+      return go;
     }
 
     private bool TryGetTouchInput(out Matrix4x4 localPose)
@@ -285,24 +301,45 @@ namespace Niantic.ARDKExamples.WayspotAnchors
         return false;
       }
 
-      var results = currentFrame.HitTest
-      (
-        _camera.pixelWidth,
-        _camera.pixelHeight,
-        touch.position,
-        ARHitTestResultType.ExistingPlane
-      );
-
-      int count = results.Count;
-      if (count <= 0)
+      if (_arSession.RuntimeEnvironment == RuntimeEnvironment.Playback)
       {
-        localPose = Matrix4x4.zero;
-        return false;
+        // Playback doesn't support plane detection yet, so instead of hit testing against planes,
+        // just place the anchor in front of the camera.
+        localPose =
+          Matrix4x4.TRS
+          (
+            _camera.transform.position + (_camera.transform.forward * 2),
+            Quaternion.identity,
+            Vector3.one
+          );
+      }
+      else
+      {
+        var results = currentFrame.HitTest
+        (
+          _camera.pixelWidth,
+          _camera.pixelHeight,
+          touch.position,
+          ARHitTestResultType.ExistingPlane
+        );
+
+        int count = results.Count;
+        if (count <= 0)
+        {
+          localPose = Matrix4x4.zero;
+          return false;
+        }
+
+        var result = results[0];
+        localPose = result.WorldTransform;
       }
 
-      var result = results[0];
-      localPose = result.WorldTransform;
       return true;
+    }
+
+    public void SetConfig(IWayspotAnchorsConfiguration config)
+    {
+      _config = config;
     }
   }
 }

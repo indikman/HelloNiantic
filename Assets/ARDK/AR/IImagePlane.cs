@@ -8,8 +8,8 @@ namespace Niantic.ARDK.AR
 {
   /// <summary>
   /// Represents a plane of an IImageBuffer.
-  /// </summary>  
-  public interface IImagePlane
+  /// </summary>
+  public interface IImagePlane: IDisposable
   {
     /// <summary>
     /// Returns a native array of bytes of the current plane.

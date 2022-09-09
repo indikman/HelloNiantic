@@ -42,7 +42,7 @@ namespace Niantic.ARDK.Utilities
       _currentInstance = null;
       NetworkSpawner._Deinitialize();
 
-      _VirtualStudioManager._ResetInstance();
+      _VirtualStudioSessionsManager._ResetInstance();
       _RemoteConnection.Deinitialize();
 
       _CheckCleanState();

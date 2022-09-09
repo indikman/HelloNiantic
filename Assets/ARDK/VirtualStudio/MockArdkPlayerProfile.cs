@@ -79,7 +79,7 @@ namespace Niantic.ARDK.VirtualStudio
 
     public MockPlayer GetPlayer()
     {
-      return _VirtualStudioManager.Instance.GetPlayer(_playerName);
+      return _VirtualStudioSessionsManager.Instance.GetPlayer(_playerName);
     }
 
     public override string ToString()

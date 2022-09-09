@@ -49,7 +49,7 @@ namespace Niantic.ARDK.VPSCoverage
 #pragma warning restore 1998
     {
       var mockResponse = _responses.Coverage.ToResponse();
-      return new CoverageAreasResult(mockResponse);
+      return new CoverageAreasResult(mockResponse, queryLocation, queryRadius);
     }
 
 #pragma warning disable 1998

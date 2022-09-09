@@ -375,22 +375,18 @@ namespace Niantic.ARDK.AR.Awareness
       var bufferWidth = (int)forBuffer.Width;
       var bufferHeight = (int)forBuffer.Height;
 
-      var bufferOrientation = bufferWidth > bufferHeight
-#if UNITY_2021_3_OR_NEWER
-        ? ScreenOrientation.LandscapeLeft
-#else
-        ? ScreenOrientation.Landscape
-#endif
-        : ScreenOrientation.Portrait;
+      var bufferOrientation =
+        bufferWidth > bufferHeight
+          ? ScreenOrientation.LandscapeLeft
+          : ScreenOrientation.Portrait;
+
+      var usingLandscape =
+        usingOrientation == ScreenOrientation.LandscapeLeft ||
+        usingOrientation == ScreenOrientation.LandscapeRight;
 
       var targetOrientation =
-        usingOrientation == ScreenOrientation.LandscapeLeft ||
-        usingOrientation == ScreenOrientation.LandscapeRight
-#if UNITY_2021_3_OR_NEWER
+        usingLandscape
           ? ScreenOrientation.LandscapeLeft
-#else
-          ? ScreenOrientation.Landscape
-#endif
           : ScreenOrientation.Portrait;
 
       var rotateContainer = bufferOrientation != targetOrientation;

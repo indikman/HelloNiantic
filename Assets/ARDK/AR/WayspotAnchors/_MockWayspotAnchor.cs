@@ -8,64 +8,128 @@ using UnityEngine;
 
 namespace Niantic.ARDK.AR.WayspotAnchors
 {
-  internal class _MockWayspotAnchor: 
+  internal class _MockWayspotAnchor:
+    _ThreadCheckedObject,
     IWayspotAnchor,
     _IInternalTrackable
   {
-    /// Called when the position oof rotation of the mock wayspot anchor has been updated
     public ArdkEventHandler<WayspotAnchorResolvedArgs> TrackingStateUpdated { get; set; }
+
+    public event ArdkEventHandler<WayspotAnchorResolvedArgs> TransformUpdated
+    {
+      add
+      {
+        _CheckThread();
+
+        _transformUpdated += value;
+
+        if (Status == WayspotAnchorStatusCode.Success)
+          value.Invoke(new WayspotAnchorResolvedArgs(ID, LastKnownPosition, LastKnownRotation));
+      }
+      remove
+      {
+        _transformUpdated -= value;
+      }
+    }
+
+    public event ArdkEventHandler<WayspotAnchorStatusUpdate> StatusCodeUpdated
+    {
+      add
+      {
+        _CheckThread();
+
+        _statusCodeUpdated += value;
+        value.Invoke(new WayspotAnchorStatusUpdate(ID, Status));
+      }
+      remove
+      {
+        _statusCodeUpdated -= value;
+      }
+    }
+
+    public Guid ID { get; }
 
     /// Whether or not the mock anchor is currently being tracked
     public bool Tracking { get; private set; }
 
-    /// Sets whether or not the mock anchor should be tracked
-    /// @param tracking Whether or not to track the mock anchor
-    /// @note This is an internal method
-    void _IInternalTrackable.SetTrackingEnabled (bool tracking) //This method is internal, not private
+    public WayspotAnchorStatusCode Status { get; private set; } = WayspotAnchorStatusCode.Pending;
+
+    public Vector3 LastKnownPosition { get; private set; }
+
+    public Quaternion LastKnownRotation { get; private set; }
+
+    // Sets whether or not the mock anchor should be tracked
+    // Part of _IInternalTrackable interface
+    public void SetTrackingEnabled (bool tracking)
     {
       Tracking = tracking;
     }
 
-    /// Gets the mock anchor's local pose
-    internal Matrix4x4 LocalPose { get; }
+    // Part of _IInternalTrackable interface
+    public void SetTransform(Vector3 position, Quaternion rotation)
+    {
+      LastKnownPosition = position;
+      LastKnownRotation = rotation;
+      _transformUpdated?.Invoke(new WayspotAnchorResolvedArgs(ID, LastKnownPosition, LastKnownRotation));
+    }
 
-    /// Creates a mock anchor
-    /// @param id The ID of the mock anchor to create
-    /// @param localPose The local pose of the mock anchor
+    // Part of _IInternalTrackable interface
+    public void SetStatusCode(WayspotAnchorStatusCode statusCode)
+    {
+      if (Status != statusCode)
+      {
+        Status = statusCode;
+        _statusCodeUpdated?.Invoke(new WayspotAnchorStatusUpdate(ID, Status));
+      }
+    }
+
     public _MockWayspotAnchor(Guid id, Matrix4x4 localPose)
     {
+      _FriendTypeAsserter.AssertCallerIs(typeof(_WayspotAnchorFactory));
+
       ID = id;
-      LocalPose = localPose;
+      LastKnownPosition = localPose.ToPosition();
+      LastKnownRotation = localPose.ToRotation();
     }
 
-    /// Creates a mock anchor
-    /// @param blob The blob of data used to create the mock anchor
-    public _MockWayspotAnchor(byte[] blob)
+    public _MockWayspotAnchor(Guid id)
     {
-      string json = Encoding.UTF8.GetString(blob);
-      var mockWayspotAnchorData = JsonUtility.FromJson<_MockWayspotAnchorData>(json);
-      string id = mockWayspotAnchorData._ID;
-      var position = new Vector3
-      (
-        mockWayspotAnchorData._XPosition,
-        mockWayspotAnchorData._YPosition,
-        mockWayspotAnchorData._ZPosition
-      );
+      _FriendTypeAsserter.AssertCallerIs(typeof(_WayspotAnchorFactory));
 
-      var rotation = new Vector3
-      (
-        mockWayspotAnchorData._XRotation,
-        mockWayspotAnchorData._YRotation,
-        mockWayspotAnchorData._ZRotation
-      );
-
-      var localPose = Matrix4x4.TRS(position, Quaternion.Euler(rotation), Vector3.one);
-      ID = Guid.Parse(id);
-      LocalPose = localPose;
+      ID = id;
     }
 
-    /// Gets the ID of the mock anchor
-    public Guid ID { get; }
+    public _MockWayspotAnchor(byte[] data)
+    {
+      _FriendTypeAsserter.AssertCallerIs(typeof(_WayspotAnchorFactory));
+
+      var json = Encoding.UTF8.GetString(data);
+      var mockWayspotAnchorData = JsonUtility.FromJson<_MockWayspotAnchorData>(json);
+
+      var success = Guid.TryParse(mockWayspotAnchorData._ID, out Guid identifier);
+      if (success)
+        ID = identifier;
+      else
+        throw new ArgumentException("Failed to create wayspot anchor from payload", nameof(data));
+
+      LastKnownPosition =
+        new Vector3
+        (
+          mockWayspotAnchorData._XPosition,
+          mockWayspotAnchorData._YPosition,
+          mockWayspotAnchorData._ZPosition
+        );
+
+      var rotationEuler =
+        new Vector3
+        (
+          mockWayspotAnchorData._XRotation,
+          mockWayspotAnchorData._YRotation,
+          mockWayspotAnchorData._ZRotation
+        );
+
+      LastKnownRotation = Quaternion.Euler(rotationEuler);
+    }
 
     /// Gets the payload of the mock anchor
     /// @note This is a wrapper around the blob of data
@@ -74,14 +138,13 @@ namespace Niantic.ARDK.AR.WayspotAnchors
       get
       {
         string id = ID.ToString();
-        var position = LocalPose.ToPosition();
-        var rotation = LocalPose.ToRotation().eulerAngles;
+        var rotation = LastKnownRotation.eulerAngles;
         var mockWayspotAnchorData = new _MockWayspotAnchorData()
         {
           _ID = id,
-          _XPosition = position.x,
-          _YPosition = position.y,
-          _ZPosition = position.z,
+          _XPosition = LastKnownPosition.x,
+          _YPosition = LastKnownPosition.y,
+          _ZPosition = LastKnownPosition.z,
           _XRotation = rotation.x,
           _YRotation = rotation.y,
           _ZRotation = rotation.z
@@ -112,5 +175,8 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     public void Dispose()
     {
     }
+
+    private event ArdkEventHandler<WayspotAnchorResolvedArgs> _transformUpdated = args => {};
+    private event ArdkEventHandler<WayspotAnchorStatusUpdate> _statusCodeUpdated = args => {};
   }
 }

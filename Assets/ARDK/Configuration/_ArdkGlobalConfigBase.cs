@@ -1,3 +1,4 @@
+using Niantic.ARDK.AR.Protobuf;
 using Niantic.ARDK.Configuration.Internal;
 using Niantic.ARDK.Networking;
 
@@ -8,6 +9,9 @@ namespace Niantic.ARDK.Configuration
     _IArdkConfig,
     _IArdkMetadataConfig
   {
+    
+    public abstract string GetTelemetryKey();
+    
     public abstract bool SetUserIdOnLogin(string userId);
 
     public abstract bool SetDbowUrl(string url);
@@ -47,5 +51,7 @@ namespace Niantic.ARDK.Configuration
     public abstract string GetArdkAppInstanceId();
 
     public abstract string GetApiKey();
+    
+    public abstract ARClientEnvelope.Types.AgeLevel GetAgeLevel();
   }
 }

@@ -149,7 +149,7 @@ namespace Niantic.ARDK.VirtualStudio.Remote
 
       Application.runInBackground = true;
 
-      Platform.Init();
+      _Platform.Init();
 
       if (_remoteConnectionImpl != null)
         _remoteConnectionImpl.Dispose();
@@ -264,7 +264,9 @@ namespace Niantic.ARDK.VirtualStudio.Remote
     /// <param name="id">The id to send with the data.</param>
     /// <param name="data">The data to send.</param>
     /// <param name="transportType">The protocol to send the data with.</param>
+#pragma warning disable 612, 618 
     public static void Send(Guid id, byte[] data, TransportType transportType = TransportType.ReliableUnordered)
+#pragma warning restore 612, 618 
     {
       bool readyAndConnected =
         _remoteConnectionImpl != null &&
@@ -301,7 +303,9 @@ namespace Niantic.ARDK.VirtualStudio.Remote
     /// <param name="id">The id of the message.</param>
     /// <param name="value">The value to send.</param>
     /// <param name="transportType">The protocol to send the data with.</param>
+#pragma warning disable 612, 618 
     public static void Send<TValue>(Guid id, TValue value, TransportType transportType = TransportType.ReliableUnordered)
+#pragma warning restore 612, 618 
     {
       Send(id, value.SerializeToArray(), transportType);
     }

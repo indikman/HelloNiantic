@@ -258,9 +258,11 @@ namespace Niantic.ARDK.Networking
         return;
       }
 
+#pragma warning disable 612, 618
       var isUnreliableMessage =
         transportType == TransportType.UnreliableOrdered ||
         transportType == TransportType.UnreliableUnordered;
+#pragma warning restore 612, 618 
 
       if (isUnreliableMessage)
       {
@@ -472,7 +474,7 @@ namespace Niantic.ARDK.Networking
 
     static _NativeMultipeerNetworking()
     {
-      Platform.Init();
+      _Platform.Init();
     }
 
     /// <summary>
@@ -497,7 +499,7 @@ namespace Niantic.ARDK.Networking
 #pragma warning disable 0162
       // This is required to differentiate between unit testing (does not require the native platform)
       //  and Native in Editor
-      if (NativeAccess.Mode == NativeAccess.ModeType.Testing)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Testing)
         return;
 #pragma warning restore 0162
 

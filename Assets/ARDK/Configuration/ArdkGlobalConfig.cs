@@ -1,11 +1,10 @@
 // Copyright 2022 Niantic, Inc. All Rights Reserved.
 
 using System;
-using System.Runtime.InteropServices;
-using Niantic.ARDK.AR;
+
 using Niantic.ARDK.Configuration.Internal;
 using Niantic.ARDK.Networking;
-using Niantic.ARDK.Utilities.Logging;
+using Niantic.ARDK.Utilities;
 
 namespace Niantic.ARDK.Configuration
 {
@@ -17,13 +16,21 @@ namespace Niantic.ARDK.Configuration
   {
     internal const string _DbowUrl = "https://bowvocab.eng.nianticlabs.com/dbow_b50_l3.bin";
     internal const string _DefaultAuthUrl = "https://us-central1-ar-dev-portal-prod.cloudfunctions.net/auth_token";
+    internal static event Action _LoginChanged;
     
     private static readonly _ArdkGlobalConfigBase _impl;
-
+    
     static ArdkGlobalConfig()
     {
-      var implementationType = _GetImplementationType();
+      // Note: We can create a _NativeFeaturePreloader without setting the AccessMode to Native, 
+      // and then the preloader will download from default URLs instead of ones set in the ArdkGlobalConfig.
+      // There's currently no important use case where that's relevant though, so leaving the bug as known but unresolved.
       
+      _ImplementationType implementationType = _ImplementationType.Native;
+
+      if (!_ArdkPlatformUtility.AreNativeBinariesAvailable)
+        implementationType = _ImplementationType.Placeholder;
+
       switch (implementationType)
       {
         case _ImplementationType.Native:
@@ -41,7 +48,7 @@ namespace Niantic.ARDK.Configuration
     {
       get => _impl; 
     }
-
+    
     public static bool SetDbowUrl(string url)
     {
       return _impl.SetDbowUrl(url);
@@ -85,7 +92,7 @@ namespace Niantic.ARDK.Configuration
     }
 
     // returns the last good jwt token from API key validation
-    internal static string GetJwtToken()
+    internal static string _GetJwtToken()
     {
       if (_impl is _NativeArdkConfig nativeConfig)
       {
@@ -105,7 +112,12 @@ namespace Niantic.ARDK.Configuration
 
       return null;
     }
-    
+
+    internal static string _GetTelemetryKey()
+    {
+      return _impl.GetTelemetryKey();
+    }
+
     /// Set the user id associated with the current user.
     /// We strongly recommend generating and using User IDs. Accurate user information allows
     ///  Niantic to support you in maintaining data privacy best practices and allows you to
@@ -118,8 +130,15 @@ namespace Niantic.ARDK.Configuration
     /// @returns True if set properly, false if not
     public static bool SetUserIdOnLogin(string userId)
     {
-      return _impl.SetUserIdOnLogin(userId);
+      var result = _impl.SetUserIdOnLogin(userId);
+      if (result)
+      {
+        _LoginChanged?.Invoke();
+      }
+      
+      return result;
     }
+    
 
     /// Clear the user id set by |SetUserIdOnLogin|.
     /// @returns True if the user id is cleared properly, false if not
@@ -130,83 +149,9 @@ namespace Niantic.ARDK.Configuration
  
     internal static NetworkingErrorCode _VerifyApiKeyWithFeature(string feature, bool isAsync = true)
     {
-      return _impl.VerifyApiKeyWithFeature(feature, isAsync: isAsync);
-    }
-    
-    private static bool IsM1Processor()
-    {
-      /*
-       * https://developer.apple.com/documentation/apple-silicon/about-the-rosetta-translation-environment
-       * From sysctl.proc_translated,
-       * Intel/iPhone => -1
-       * Just M1 => 0
-       * M1 with Rosetta => 1
-       */
-      int value;
-      var size = (IntPtr)4;
-      var param = "sysctl.proc_translated";
-      var result = sysctlbyname(param, out value, ref size, IntPtr.Zero, (IntPtr)0);
-
-      return result >= 0;
+      return _impl.VerifyApiKeyWithFeature(feature, isAsync);
     }
 
-    private static _ImplementationType _GetImplementationType()
-    {
-      // Default to native unless you want to have more custom urls in which case, go for placeholder.
-      // Use Placeholder also if you are running windows or a M1 mac.
-      
-      // Note: We can create a _NativeFeaturePreloader without setting the AccessMode to Native, 
-      // and then the preloader will download from default URLs instead of ones set in the ArdkGlobalConfig.
-      // There's currently no important use case where that's relevant though, so leaving the bug as known but unresolved.
-      
-      _ImplementationType typeToReturn = _ImplementationType.Native;
-
-#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
-      // For IOS and Android, we always use the native implementation.
-      return typeToReturn;
-#else  // UNITY_EDITOR
-      var isNativeMode = NativeAccess.Mode == NativeAccess.ModeType.Native;
-      if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-      {
-        // Android/Linux
-        if (!isNativeMode)
-          typeToReturn = _ImplementationType.Placeholder;
-      }
-      else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-      {
-        var isIntelMac = !IsM1Processor();
-        var isArchitectureX64 = RuntimeInformation.OSArchitecture == Architecture.X64;
-        var isOSBigSurOrAbove = IsOperatingSystemBigSurAndAbove();
-        var isTestingEnvironment = NativeAccess.Mode == NativeAccess.ModeType.Testing;
-
-        if (!isArchitectureX64 ||
-            !isIntelMac ||
-            !isOSBigSurOrAbove ||
-            isTestingEnvironment)
-        {
-          typeToReturn = _ImplementationType.Placeholder;;
-        }
-      }
-      else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-      {
-        typeToReturn = _ImplementationType.Placeholder;
-      }
-      return typeToReturn;
-#endif
-    }
-    
-    private static bool IsOperatingSystemBigSurAndAbove()
-    {
-      // https://en.wikipedia.org/wiki/Darwin_%28operating_system%29#Release_history 
-      // 20.0.0 Darwin is the first version of BigSur
-      Version minimumDarwinBigSurVersion = new Version(20, 0, 0);
-      
-      return Environment.OSVersion.Version >= minimumDarwinBigSurVersion;
-    }
-    
-    [DllImport("libSystem.dylib")]
-    private static extern int sysctlbyname ([MarshalAs(UnmanagedType.LPStr)]string name, out int int_val, ref IntPtr length, IntPtr newp, IntPtr newlen);
-    
     private enum _ImplementationType
     {
       Native = 0,

@@ -64,20 +64,6 @@ namespace Niantic.ARDK.Extensions
       float far = 100.0f,
       bool canRotate = true,
       bool autoDispose = true
-    ): this(session, resolution, false, near, far, canRotate, autoDispose)
-    {
-
-    }
-
-    internal ARVideoFeed
-    (
-      IARSession session,
-      Resolution resolution,
-      bool isPlayback,
-      float near = 0.1f,
-      float far = 100.0f,
-      bool canRotate = true,
-      bool autoDispose = true
     )
     {
       // Allocate the GPU texture
@@ -96,8 +82,7 @@ namespace Niantic.ARDK.Extensions
         session.RuntimeEnvironment,
         near,
         far,
-        !canRotate,
-        isPlayback
+        !canRotate
       );
 
       if (_renderer == null)
@@ -164,16 +149,10 @@ namespace Niantic.ARDK.Extensions
       RuntimeEnvironment env,
       float near,
       float far,
-      bool lockOrientation,
-      bool isPlayback
+      bool lockOrientation
     )
     {
-      ARFrameRenderer result;
-      if (isPlayback)
-        result = ARFrameRendererFactory._CreatePlayback(target, near, far);
-      else
-        result = ARFrameRendererFactory.Create(target, env, near, far);
-
+      var result = ARFrameRendererFactory.Create(target, env, near, far);
       result.IsOrientationLocked = lockOrientation;
       return result;
     }

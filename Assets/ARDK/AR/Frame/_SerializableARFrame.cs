@@ -47,7 +47,6 @@ namespace Niantic.ARDK.AR.Frame
       ReadOnlyCollection<IARAnchor> anchors, // Even native ARAnchors are directly serializable.
       _SerializableARMap[] maps,
       float worldScale,
-      Matrix4x4 estimatedDisplayTransform,
       _SerializableARPointCloud rawFeaturePoints = null
     ):
       base
@@ -60,7 +59,6 @@ namespace Niantic.ARDK.AR.Frame
         anchors,
         maps,
         worldScale,
-        estimatedDisplayTransform,
         rawFeaturePoints
       )
     {

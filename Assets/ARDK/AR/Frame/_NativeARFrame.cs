@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 using Niantic.ARDK.AR.Anchors;
+using Niantic.ARDK.AR.Awareness;
 using Niantic.ARDK.AR.Awareness.Depth;
 using Niantic.ARDK.AR.Awareness.Semantics;
 using Niantic.ARDK.AR.Camera;
@@ -38,20 +39,20 @@ namespace Niantic.ARDK.AR.Frame
 
     static _NativeARFrame()
     {
-      Platform.Init();
+      _Platform.Init();
     }
 
     internal static void _ReleaseImmediate(IntPtr framePtr)
     {
-      switch (NativeAccess.Mode)
+      switch (_NativeAccess.Mode)
       {
-        case NativeAccess.ModeType.Native:
+        case _NativeAccess.ModeType.Native:
           _NARFrame_ReleaseImageAndTextures(framePtr);
           _NARFrame_Release(framePtr);
           break;
-        
+
 #pragma warning disable 0162
-        case NativeAccess.ModeType.Testing:
+        case _NativeAccess.ModeType.Testing:
           _TestingShim.ReleasedHandles.Add(framePtr);
           break;
 #pragma warning restore 0162
@@ -64,6 +65,8 @@ namespace Niantic.ARDK.AR.Frame
 
     internal _NativeARFrame(IntPtr nativeHandle, float worldScale)
     {
+      _NativeAccess.AssertNativeAccessValid();
+
       if (nativeHandle == IntPtr.Zero)
         throw new ArgumentException("nativeHandle can't be Zero.", nameof(nativeHandle));
 
@@ -122,10 +125,9 @@ namespace Niantic.ARDK.AR.Frame
       {
         _threadChecker._CheckThread();
 
-        #pragma warning disable 0162
-        if (NativeAccess.Mode != NativeAccess.ModeType.Native)
+        if (!_NativeAccess.IsNativeAccessValid())
           return EmptyArray<IntPtr>.Instance;
-        #pragma warning restore 0162
+
         if (_capturedImageTextures != null)
           return _capturedImageTextures;
 
@@ -169,7 +171,7 @@ namespace Niantic.ARDK.AR.Frame
 
         IntPtr imageBufferHandle = IntPtr.Zero;
 
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+        if (_NativeAccess.IsNativeAccessValid())
           imageBufferHandle = _NARFrame_GetCPUImage(_NativeHandle);
 
         if (imageBufferHandle == IntPtr.Zero)
@@ -198,7 +200,7 @@ namespace Niantic.ARDK.AR.Frame
 
         IntPtr handle = IntPtr.Zero;
 
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+        if (_NativeAccess.IsNativeAccessValid())
           handle = _NARFrame_GetDepthBuffer(_NativeHandle);
 
         if (handle == IntPtr.Zero)
@@ -223,7 +225,7 @@ namespace Niantic.ARDK.AR.Frame
 
         IntPtr handle = IntPtr.Zero;
 
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+        if (_NativeAccess.IsNativeAccessValid())
           handle = _NARFrame_GetSemanticBuffer(_NativeHandle);
 
         if (handle == IntPtr.Zero)
@@ -232,6 +234,38 @@ namespace Niantic.ARDK.AR.Frame
         _semanticBuffer = new _NativeSemanticBuffer(handle, WorldScale, Camera.Intrinsics);
 
         return _semanticBuffer;
+      }
+    }
+
+    private IReadOnlyList<Detection> _palmDetections;
+    private bool _palmDetectionsRead;
+
+    public IReadOnlyList<Detection> PalmDetections
+    {
+      get
+      {
+        _threadChecker._CheckThread();
+
+        if (_palmDetectionsRead)
+          return _palmDetections;
+
+        _palmDetectionsRead = true;
+
+        if (_NativeAccess.IsNativeAccessValid())
+        {
+          IntPtr ptr = _NARFrame_GetPalmDetections(_NativeHandle, out int size);
+          if (ptr != IntPtr.Zero)
+          {
+            Detection[] detections = new Detection[size];
+            for (int i = 0; i < size; i++)
+            {
+              detections[i] = (Detection) Marshal.PtrToStructure(ptr, typeof(Detection));
+              ptr += Marshal.SizeOf(typeof(Detection));
+            }
+            _palmDetections = new List<Detection>(detections);
+          }
+        }
+        return _palmDetections;
       }
     }
 
@@ -249,7 +283,7 @@ namespace Niantic.ARDK.AR.Frame
         {
           IntPtr cameraHandle = IntPtr.Zero;
 
-          if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+          if (_NativeAccess.IsNativeAccessValid())
             cameraHandle = _NARFrame_GetCamera(_NativeHandle);
 
           // Using a constructor here instead of caching + reusing objects in _NativeARCamera._FromNativeHandle
@@ -279,7 +313,7 @@ namespace Niantic.ARDK.AR.Frame
 
         var lightEstimateHandle = IntPtr.Zero;
 
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+        if (_NativeAccess.IsNativeAccessValid())
           lightEstimateHandle = _NARFrame_GetLightEstimate(_NativeHandle);
 
         if (lightEstimateHandle == IntPtr.Zero)
@@ -319,7 +353,7 @@ namespace Niantic.ARDK.AR.Frame
         return _anchorArray;
 
       var rawAnchors = EmptyArray<IntPtr>.Instance;
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.IsNativeAccessValid())
       {
         while (true)
         {
@@ -378,7 +412,7 @@ namespace Niantic.ARDK.AR.Frame
         return _mapArray;
 
       var rawMaps = EmptyArray<IntPtr>.Instance;
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.IsNativeAccessValid())
       {
         while (true)
         {
@@ -425,7 +459,7 @@ namespace Niantic.ARDK.AR.Frame
 
         var rawFeaturePointsHandle = IntPtr.Zero;
 
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+        if (_NativeAccess.IsNativeAccessValid())
           rawFeaturePointsHandle = _NARFrame_GetFeaturePoints(_NativeHandle);
 
         if (rawFeaturePointsHandle == IntPtr.Zero)
@@ -458,7 +492,7 @@ namespace Niantic.ARDK.AR.Frame
       // Get the count and the handle to the hit test results
       var hitTestResultsHandle = IntPtr.Zero;
       uint hitCount = 0;
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.IsNativeAccessValid())
       {
         hitCount = _NARFrame_HitTestAgainstTypes
         (
@@ -508,7 +542,7 @@ namespace Niantic.ARDK.AR.Frame
 
       var nativeDisplayTransform = new float[6];
 
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.IsNativeAccessValid())
       {
         _NARFrame_CalculateDisplayTransform
         (
@@ -571,7 +605,7 @@ namespace Niantic.ARDK.AR.Frame
           _camera = null;
       }
 
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.IsNativeAccessValid())
         _NARFrame_ReleaseImageAndTextures(_NativeHandle);
 #pragma warning disable 0162
       else
@@ -652,6 +686,9 @@ namespace Niantic.ARDK.AR.Frame
 
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern IntPtr _NARFrame_GetSemanticBuffer(IntPtr nativeHandle);
+
+    [DllImport(_ARDKLibrary.libraryName)]
+    private static extern IntPtr _NARFrame_GetPalmDetections(IntPtr nativeHandle, out int size);
 
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern void _NARFrame_ReleaseImageAndTextures(IntPtr nativeHandle);

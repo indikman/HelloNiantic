@@ -96,22 +96,35 @@ namespace Niantic.ARDK.Rendering
     )
     {
       // We require a biplanar input from ARKit
+
       if (frame.CapturedImageTextures.Length < 2)
         return false;
 
       var nativeResolution = frame.Camera.ImageResolution;
       var yResolution = nativeResolution;
-      var uvResolution = new Resolution
-      {
-        width = nativeResolution.width / 2, height = nativeResolution.height / 2
-      };
+      var uvResolution =
+        new Resolution
+        {
+          width = nativeResolution.width / 2,
+          height = nativeResolution.height / 2
+        };
 
       // Update source textures
       CreateOrUpdateExternalTexture
-        (ref _textureY, yResolution, TextureFormat.R8, frame.CapturedImageTextures[0]);
+      (
+        ref _textureY,
+        yResolution,
+        TextureFormat.R8,
+        frame.CapturedImageTextures[0]
+      );
 
       CreateOrUpdateExternalTexture
-        (ref _textureCbCr, uvResolution, TextureFormat.RG16, frame.CapturedImageTextures[1]);
+      (
+        ref _textureCbCr,
+        uvResolution,
+        TextureFormat.RG16,
+        frame.CapturedImageTextures[1]
+      );
 
       // Bind textures and the display transform
       material.SetTexture(PropertyBindings.YChannel, _textureY);

@@ -12,18 +12,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
+using Niantic.ARDK.AR.Protobuf;
 using Niantic.ARDK.Configuration.Authentication;
 
 using Niantic.ARDK.Configuration;
 using Niantic.ARDK.Configuration.Internal;
 using Niantic.ARDK.Networking;
+using Niantic.ARDK.Telemetry;
 using Niantic.ARDK.Utilities;
 using Niantic.ARDK.Utilities.Logging;
+
+using UnityEngine;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-using UnityEngine;
-
 
 namespace Niantic.ARDK.Internals
 {
@@ -31,19 +34,22 @@ namespace Niantic.ARDK.Internals
   public static class StartupSystems
   {
     // Add a destructor to this class to try and catch editor reloads
-    private static readonly _Destructor Finalise = new _Destructor();
+    private static readonly _Destructor _ = new _Destructor();
 
     // The pointer to the C++ NarSystemBase handling functionality at the native level
     private static IntPtr _nativeHandle = IntPtr.Zero;
 
     private const string FileDisablingSuffix = ".DISABLED";
 
+    private static _TelemetryService _telemetryService;
+
 #if UNITY_EDITOR_OSX
     [InitializeOnLoadMethod]
     private static void EditorStartup()
     {
+      // make sure native dll is kicked in
       EnforceRosettaBasedCompatibility();
-
+      
 #if !REQUIRE_MANUAL_STARTUP
       ManualStartup();
 #endif
@@ -66,6 +72,9 @@ namespace Niantic.ARDK.Internals
     public static void ManualStartup()
     {
 #if (AR_NATIVE_SUPPORT || UNITY_EDITOR_OSX)
+      // start the telemetry service
+      InitializeTelemetry();
+
       try
       {
         // TODO(sxian): Remove the _ROR_CREATE_STARTUP_SYSTEMS() after moving the functionalities to
@@ -85,26 +94,28 @@ namespace Niantic.ARDK.Internals
       } else {
         ARLog._Error("_nativeHandle is not null, ManualStartup is called twice");
       }
-
+      
       // The initialization of C# components should happen below.
       SetAuthenticationParameters();
       SetDeviceMetadata();
+      
+      _TelemetryService.RecordEvent(new InitializationEvent()
+      {
+        InstallMode = GetInstallMode(),
+      });
 #endif
     }
 
     private static void OnApplicationQuit()
     {
-#if (AR_NATIVE_SUPPORT || UNITY_EDITOR_OSX)
       if (_nativeHandle != IntPtr.Zero)
       {
         _NARSystemBase_Release(_nativeHandle);
         _nativeHandle = IntPtr.Zero;
       }
-#endif
     }
 
-    private const string AUTH_DOCS_MSG =
-      "For more information, visit the niantic.dev/docs/authentication.html site.";
+    private const string AUTH_DOCS_MSG = "For more information, visit the niantic.dev/docs/authentication.html site.";
 
     private static void SetAuthenticationParameters()
     {
@@ -122,10 +133,7 @@ namespace Niantic.ARDK.Internals
       else if (authConfigs.Length == 0)
       {
         ARLog._Error
-        (
-          "Could not load an ArdkAuthConfig, please add one in a Resources/ARDK/ directory. " +
-          AUTH_DOCS_MSG
-        );
+        ($"Could not load an ArdkAuthConfig, please add one in a Resources/ARDK/ directory. {AUTH_DOCS_MSG}");
       }
       else
       {
@@ -152,13 +160,10 @@ namespace Niantic.ARDK.Internals
         }
         else
         {
-          ARLog._Error
-          (
-            "No API Key was found. Add it to an ArdkAuthConfig asset. "  + AUTH_DOCS_MSG
-          );
+          ARLog._Error($"No API Key was found. Add it to an ArdkAuthConfig asset. {AUTH_DOCS_MSG}");
         }
       }
-
+      
       var authUrl = ArdkGlobalConfig.GetAuthenticationUrl();
       if (string.IsNullOrEmpty(authUrl))
       {
@@ -176,15 +181,18 @@ namespace Niantic.ARDK.Internals
           ARLog._Debug("Successfully authenticated ARDK Api Key");
         else
         {
-          ARLog._Error("Attempted to authenticate ARDK Api Key, but got error: " + authResult);
+          ARLog._Error($"Attempted to authenticate ARDK Api Key, but got error: {authResult}");
         }
       }
 #endif
 
-      var installMode = Application.installMode;
-      var installModeString = string.Format("install_mode:{0}", installMode.ToString());
       if (!string.IsNullOrEmpty(apiKey))
-        ArdkGlobalConfig._VerifyApiKeyWithFeature(installModeString, isAsync: true);
+        ArdkGlobalConfig._VerifyApiKeyWithFeature(GetInstallMode(), isAsync: true);
+    }
+
+    private static string GetInstallMode()
+    {
+      return $"install_mode:{Application.installMode.ToString()}";
     }
 
     private static void SetDeviceMetadata()
@@ -193,38 +201,14 @@ namespace Niantic.ARDK.Internals
       ArdkGlobalConfig._Internal.SetArdkInstanceId(_ArdkMetadataConfigExtension._CreateFormattedGuid());
     }
 
-    // TODO(bpeake): Find a way to shutdown gracefully and add shutdown here.
-
     private static IntPtr _InitialiseNarBaseSystemBasedOnOS()
     {
-      // prioritise android and ios to always initialise base nar system
-#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
-      return _InitialiseNarSystem();
-#else
-      // Macbooks which are M1 processors or are Catalina and below need to use IntPtr.Zero right now
-
-      bool hasM1ProcessorOrHasOSBelowBigSur = _IsM1Processor() || !_IsOperatingSystemBigSurAndAbove();
-      bool isMacNotCompatibleForNative = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && hasM1ProcessorOrHasOSBelowBigSur;
-
-      if (isMacNotCompatibleForNative ||
-          RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      if (_ArdkPlatformUtility.AreNativeBinariesAvailable)
       {
-        // return 0 as native handler for windows, m1 macbooks and macbooks below BigSur
-        return IntPtr.Zero;
+        return _NARSystemBase_Initialize(_TelemetryService._OnNativeRecordTelemetry);
       }
-
-      // for everything else initialise nar base system
-      return _InitialiseNarSystem();
-#endif
-    }
-
-    private static IntPtr _InitialiseNarSystem()
-    {
-#if (AR_NATIVE_SUPPORT || UNITY_EDITOR_OSX)
-      return _NARSystemBase_Initialize();
-#else
+      
       return IntPtr.Zero;
-#endif
     }
 
     private static readonly Dictionary<string, string> _rosettaFiles = new Dictionary<string, string>()
@@ -232,15 +216,15 @@ namespace Niantic.ARDK.Internals
       {"mcs", "/ARDK/mcs.rsp"},
       {"csc", "/ARDK/csc.rsp"},
     };
+    
     private static bool _rosettaCompatibilityCheckPerformed = false;
-
     private static void EnforceRosettaBasedCompatibility()
     {
       if (_rosettaCompatibilityCheckPerformed)
         return;
 
 #if UNITY_EDITOR
-      if (_IsUsingRosetta())
+      if (_ArdkPlatformUtility.IsUsingRosetta())
       {
         _EnableRosettaFiles();
       }
@@ -342,75 +326,31 @@ namespace Niantic.ARDK.Internals
 
 #endif
 
+    private static void InitializeTelemetry()
+    {
+      _telemetryService = _TelemetryService.Instance; 
+      _telemetryService.Start(Application.persistentDataPath);
+      
+      _TelemetryHelper.Start();
+    }
+
     private sealed class _Destructor
     {
+      // TODO: Inject telemetry service in ctor and do a Flush() in dispose once Flush() is exposed to us in the library
       ~_Destructor()
       {
+        _telemetryService.Stop();
         OnApplicationQuit();
       }
     }
 
-#if (AR_NATIVE_SUPPORT || UNITY_EDITOR_OSX)
-
-    // TODO AR-10581 Consolidate OS branching logic from here and from ArdkGlobalConfig
-    private static bool _IsOperatingSystemBigSurAndAbove()
-    {
-      // https://en.wikipedia.org/wiki/Darwin_%28operating_system%29#Release_history
-      // 20.0.0 Darwin is the first version of BigSur
-      return Environment.OSVersion.Version >= new Version(20, 0, 0);
-    }
-
-    private static bool _IsUsingRosetta()
-    {
-      return
-        _IsM1Processor() &&
-        RuntimeInformation.ProcessArchitecture == Architecture.X64;
-    }
-
-    private static bool _IsM1Processor()
-    {
-      /*
-       * https://developer.apple.com/documentation/apple-silicon/about-the-rosetta-translation-environment
-       * From sysctl.proc_translated,
-       * Intel/iPhone => -1
-       * M1 => 0
-       */
-      int _;
-      var size = (IntPtr)4;
-      var param = "sysctl.proc_translated";
-      var result = sysctlbyname(param, out _, ref size, IntPtr.Zero, (IntPtr)0);
-
-      return result >= 0;
-    }
-
-    [DllImport("libSystem.dylib")]
-    private static extern int sysctlbyname ([MarshalAs(UnmanagedType.LPStr)]string name, out int int_val, ref IntPtr length, IntPtr newp, IntPtr newlen);
-
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern void _ROR_CREATE_STARTUP_SYSTEMS();
 
-    [DllImport(_ARDKLibrary.libraryName)]
-    private static extern IntPtr _NARSystemBase_Initialize();
+    [DllImport(_ARDKLibrary.libraryName, CharSet = CharSet.Auto)]
+    private static extern IntPtr _NARSystemBase_Initialize(_TelemetryService._ARDKTelemetry_Callback callback);
 
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern void _NARSystemBase_Release(IntPtr nativeHandle);
-#else
-
-    private static bool _IsUsingRosetta()
-    {
-      return false;
-    }
-
-    private static bool _IsM1Processor()
-    {
-      return false;
-    }
-
-    private static bool _IsOperatingSystemBigSurAndAbove()
-    {
-      return false;
-    }
-
-#endif
   }
 }

@@ -103,6 +103,8 @@ namespace Niantic.ARDK.Networking.HLAPI.Object.Unity
           .GetOrCreateManagedSession()
           .CreateAndRegisterGroup(new NetworkId(SpawnGroupId));
 
+// keep using deprecated functionality for now, to not break things out of the box
+#pragma warning disable 0618
       var streamReplicator =
         new MessageStreamReplicator<SpawnMessage>
         (
@@ -110,7 +112,6 @@ namespace Niantic.ARDK.Networking.HLAPI.Object.Unity
           multipeerNetworking.AnyToAnyDescriptor(TransportType.ReliableOrdered),
           netSpawnerGroup
         );
-
       _spawnMessageStreams[multipeerNetworking.StageIdentifier] = streamReplicator;
 
       streamReplicator.MessageReceived +=
@@ -123,6 +124,7 @@ namespace Niantic.ARDK.Networking.HLAPI.Object.Unity
           multipeerNetworking.AnyToAnyDescriptor(TransportType.ReliableOrdered),
           netSpawnerGroup
         );
+#pragma warning restore 0618
 
       _destructorMessageStreams[multipeerNetworking.StageIdentifier] = destructorMessageStream;
 

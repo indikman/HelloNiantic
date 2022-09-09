@@ -5,13 +5,14 @@ using System.Linq;
 
 using Niantic.ARDK.AR.ARSessionEventArgs;
 using Niantic.ARDK.Rendering;
+using Niantic.ARDK.Utilities;
 
 using UnityEngine;
 
 namespace Niantic.ARDK.AR.Awareness.Semantics
 {
-  public class SemanticBufferProcessor: 
-    AwarenessBufferProcessor<ISemanticBuffer>, 
+  public class SemanticBufferProcessor:
+    AwarenessBufferProcessor<ISemanticBuffer>,
     ISemanticBufferProcessor
   {
     // The currently active AR session
@@ -27,7 +28,7 @@ namespace Niantic.ARDK.AR.Awareness.Semantics
       _viewport = UnityEngine.Camera.main;
       ARSessionFactory.SessionInitialized += OnARSessionInitialized;
     }
-    
+
     /// Allocates a new semantic buffer processor.
     /// @param viewport Determines the target viewport to fit the awareness buffer to.
     public SemanticBufferProcessor(RenderTarget viewport)
@@ -35,16 +36,16 @@ namespace Niantic.ARDK.AR.Awareness.Semantics
       _viewport = viewport;
       ARSessionFactory.SessionInitialized += OnARSessionInitialized;
     }
-    
+
     protected override void Dispose(bool disposing)
     {
       base.Dispose(disposing);
-      
+
       ARSessionFactory.SessionInitialized -= OnARSessionInitialized;
       if (_session != null)
         _session.FrameUpdated -= OnFrameUpdated;
     }
-    
+
     private void OnARSessionInitialized(AnyARSessionInitializedArgs args)
     {
       if (_session != null)
@@ -60,7 +61,7 @@ namespace Niantic.ARDK.AR.Awareness.Semantics
       if (frame == null)
         return;
 
-      var orientation = RenderTarget.ScreenOrientation;
+      var orientation = MathUtils.CalculateScreenOrientation();
 
       _ProcessFrame
       (
@@ -73,7 +74,7 @@ namespace Niantic.ARDK.AR.Awareness.Semantics
 
     /// Assigns a new render target descriptor for the semantics processor.
     /// The render target defines the viewport attributes to correctly fit
-    /// the semantics buffer. 
+    /// the semantics buffer.
     public void AssignViewport(RenderTarget target)
     {
       _viewport = target;
@@ -97,11 +98,11 @@ namespace Niantic.ARDK.AR.Awareness.Semantics
       var semanticsBuffer = AwarenessBuffer;
       if (semanticsBuffer == null)
         return 0u;
-      
+
       // Get normalized coordinates
       var x = viewportX + 0.5f;
       var y = viewportY + 0.5f;
-      var resolution = _viewport.GetResolution(RenderTarget.ScreenOrientation);
+      var resolution = _viewport.GetResolution(MathUtils.CalculateScreenOrientation());
       var uv = new Vector3(x / resolution.width, y / resolution.height, 1.0f);
 
       return AwarenessBuffer.Sample(uv, SamplerTransform);
@@ -161,15 +162,15 @@ namespace Niantic.ARDK.AR.Awareness.Semantics
     {
       var semantics = GetSemantics(viewportX, viewportY);
       var bitMask = AwarenessBuffer.GetChannelTextureMask(channelName);
-      
+
       return (semantics & bitMask) != 0u;
     }
-    
+
     public void CopyToAlignedTextureARGB32(int channel, ref Texture2D texture, ScreenOrientation orientation)
     {
       if (AwarenessBuffer == null)
         return;
-      
+
       // Get a typed buffer
       ISemanticBuffer semanticsBuffer = AwarenessBuffer;
 
@@ -184,7 +185,7 @@ namespace Niantic.ARDK.AR.Awareness.Semantics
       (
         ref texture,
         orientation,
-        
+
         // The sampler function needs to be defined such that given a destination
         // texture coordinate, what color needs to be written to that position?
         // We sample the typed awareness buffer and apply the channel bitmask.
@@ -196,12 +197,12 @@ namespace Niantic.ARDK.AR.Awareness.Semantics
           : Color.clear
       );
     }
-    
+
     public void CopyToAlignedTextureARGB32(int[] channels, ref Texture2D texture, ScreenOrientation orientation)
     {
       if (AwarenessBuffer == null)
         return;
-      
+
       // Get a typed buffer
       ISemanticBuffer semanticsBuffer = AwarenessBuffer;
 
@@ -216,7 +217,7 @@ namespace Niantic.ARDK.AR.Awareness.Semantics
       (
         ref texture,
         orientation,
-        
+
         // The sampler function needs to be defined such that given a destination
         // texture coordinate, what color needs to be written to that position?
         // We sample the typed awareness buffer and apply the channel bitmask.

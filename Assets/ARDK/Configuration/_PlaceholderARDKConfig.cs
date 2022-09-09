@@ -1,6 +1,7 @@
 // Copyright 2022 Niantic, Inc. All Rights Reserved.
 using System;
 
+using Niantic.ARDK.AR.Protobuf;
 using Niantic.ARDK.Configuration.Internal;
 using Niantic.ARDK.Networking;
 using Niantic.ARDK.Utilities.Logging;
@@ -16,11 +17,12 @@ namespace Niantic.ARDK.Configuration
     _ArdkGlobalConfigBase
   {
     private static readonly string _clientId;
-    
+
     private string _authenticationUrl;
-    private string _userId;
-    private string _apiKey;
+    private string _userId = "";
+    private string _apiKey = "";
     private string _dbowUrl;
+    private ARClientEnvelope.Types.AgeLevel _ageLevel;
 
     static _PlaceholderArdkConfig()
     {
@@ -30,6 +32,13 @@ namespace Niantic.ARDK.Configuration
     public _PlaceholderArdkConfig()
     {
       ARLog._Debug($"Using config: {nameof(_PlaceholderArdkConfig)}");
+      _ageLevel = ARClientEnvelope.Types.AgeLevel.Unknown;
+    }
+    
+
+    public override string GetTelemetryKey()
+    {
+      return string.Empty;
     }
 
     public override bool SetUserIdOnLogin(string userId)
@@ -123,7 +132,7 @@ namespace Niantic.ARDK.Configuration
 
     public override string GetManufacturer()
     {
-      return null;
+      return string.Empty;
     }
 
     public override string GetDeviceModel()
@@ -134,7 +143,7 @@ namespace Niantic.ARDK.Configuration
     public override string GetArdkVersion()
     {
       // This doesn't work without the native plugin :(
-      return null;
+      return "0.0.0";
     }
 
     public override string GetUserId()
@@ -150,6 +159,11 @@ namespace Niantic.ARDK.Configuration
     public override string GetApiKey()
     {
       return _apiKey;
+    }
+
+    public override ARClientEnvelope.Types.AgeLevel GetAgeLevel()
+    {
+      return _ageLevel;
     }
   }
 }

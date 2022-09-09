@@ -16,7 +16,7 @@ namespace Niantic.ARDK.AR.ReferenceImage
   {
     static _NativeARReferenceImage()
     {
-      Platform.Init();
+      _Platform.Init();
     }
 
     private static readonly _WeakValueDictionary<IntPtr, _NativeARReferenceImage> _allImages =
@@ -25,7 +25,7 @@ namespace Niantic.ARDK.AR.ReferenceImage
     internal static _NativeARReferenceImage _FromNativeHandle(IntPtr nativeHandle)
     {
       _StaticMemberValidator._CollectionIsEmptyWhenScopeEnds(() => _allImages);
-      
+
       var cppAddress = _NARReferenceImage_GetCppAddress(nativeHandle);
 
       var possibleResult = _allImages.TryGetValue(cppAddress);
@@ -68,27 +68,26 @@ namespace Niantic.ARDK.AR.ReferenceImage
     ~_NativeARReferenceImage()
     {
       _ReleaseImmediate(_NativeHandle);
-      
       GC.RemoveMemoryPressure(_MemoryPressure);
     }
 
     private static void _ReleaseImmediate(IntPtr nativeHandle)
     {
-      if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+      if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
         _NARReferenceImage_Release(nativeHandle);
     }
 
     public void Dispose()
     {
       GC.SuppressFinalize(this);
-      
       var nativeHandle = _NativeHandle;
+
       if (nativeHandle != IntPtr.Zero)
       {
         _NativeHandle = IntPtr.Zero;
 
         _ReleaseImmediate(nativeHandle);
-        
+
         GC.RemoveMemoryPressure(_MemoryPressure);
       }
     }
@@ -100,15 +99,14 @@ namespace Niantic.ARDK.AR.ReferenceImage
       get
       {
         var stringBuilder = new StringBuilder(25);
-        
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+        if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
           _NARReferenceImage_GetName(_NativeHandle, stringBuilder, stringBuilder.Capacity);
-        
+
         return stringBuilder.ToString();
       }
       set
       {
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+        if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
           _NARReferenceImage_SetName(_NativeHandle, value);
       }
     }
@@ -118,20 +116,20 @@ namespace Niantic.ARDK.AR.ReferenceImage
       get
       {
         var rawPhysicalSize = new float[2];
-        
-        if (NativeAccess.Mode == NativeAccess.ModeType.Native)
+
+        if (_NativeAccess.Mode == _NativeAccess.ModeType.Native)
           _NARReferenceImage_GetPhysicalSize(_NativeHandle, rawPhysicalSize);
-        
+
         return new Vector2(rawPhysicalSize[0], rawPhysicalSize[1]);
       }
     }
-    
+
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern void _NARReferenceImage_Release(IntPtr nativeHandle);
-    
+
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern IntPtr _NARReferenceImage_GetCppAddress(IntPtr nativeHandle);
-    
+
     [DllImport(_ARDKLibrary.libraryName)]
     private static extern void _NARReferenceImage_GetName
     (

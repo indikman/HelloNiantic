@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Niantic.ARDK.AR.WayspotAnchors
 {
-  public class WayspotAnchorResolvedArgs: IArdkEventArgs
+  public struct WayspotAnchorResolvedArgs: IArdkEventArgs
   {
     /// The ID of the wayspot anchor being resolved
     public Guid ID { get; }
@@ -21,11 +21,11 @@ namespace Niantic.ARDK.AR.WayspotAnchors
     /// Creates the args for wayspot anchor resolutions
     /// param id The ID of the wayspot anchor being resolved
     /// param localPose The new local pose of the wayspot anchor being resolved
-    internal WayspotAnchorResolvedArgs(Guid id, Matrix4x4 localPose)
+    internal WayspotAnchorResolvedArgs(Guid id, Vector3 position, Quaternion rotation)
     {
       ID = id;
-      Position = localPose.ToPosition();
-      Rotation = localPose.ToRotation();
+      Position = position;
+      Rotation = rotation;
     }
   }
 }

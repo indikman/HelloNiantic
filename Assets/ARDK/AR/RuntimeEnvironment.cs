@@ -19,6 +19,9 @@ namespace Niantic.ARDK
     Remote,
 
     /// AR data and networking responses are completely code based and contained in the Unity Editor.
-    Mock
+    Mock,
+
+    /// AR data is sourced from a Playback dataset. Networking is not supported in this mode.
+    Playback
   }
 }

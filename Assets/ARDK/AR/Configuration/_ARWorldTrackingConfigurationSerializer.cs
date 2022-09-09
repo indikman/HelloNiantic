@@ -37,6 +37,7 @@ namespace Niantic.ARDK.AR.Configuration
       // Depth
       BooleanSerializer.Instance.Serialize(serializer, item.IsDepthEnabled);
       CompressedUInt32Serializer.Instance.Serialize(serializer, item.DepthTargetFrameRate);
+      BooleanSerializer.Instance.Serialize(serializer, item.IsDepthPointCloudEnabled);
 
       // Semantics
       BooleanSerializer.Instance.Serialize(serializer, item.IsSemanticSegmentationEnabled);
@@ -46,6 +47,9 @@ namespace Niantic.ARDK.AR.Configuration
       BooleanSerializer.Instance.Serialize(serializer, item.IsMeshingEnabled);
       CompressedUInt32Serializer.Instance.Serialize(serializer, item.MeshingTargetFrameRate);
       FloatSerializer.Instance.Serialize(serializer, item.MeshingTargetBlockSize);
+
+      // Palm Detection
+      BooleanSerializer.Instance.Serialize(serializer, item.IsPalmDetectionEnabled);
     }
 
     protected override T DoDeserialize(BinaryDeserializer deserializer)
@@ -64,6 +68,7 @@ namespace Niantic.ARDK.AR.Configuration
       // Depth
       result.IsDepthEnabled = BooleanSerializer.Instance.Deserialize(deserializer);
       result.DepthTargetFrameRate = CompressedUInt32Serializer.Instance.Deserialize(deserializer);
+      result.IsDepthPointCloudEnabled = BooleanSerializer.Instance.Deserialize(deserializer);
 
       // Semantics
       result.IsSemanticSegmentationEnabled = BooleanSerializer.Instance.Deserialize(deserializer);
@@ -73,6 +78,9 @@ namespace Niantic.ARDK.AR.Configuration
       result.IsMeshingEnabled = BooleanSerializer.Instance.Deserialize(deserializer);
       result.MeshingTargetFrameRate = CompressedUInt32Serializer.Instance.Deserialize(deserializer);
       result.MeshingTargetBlockSize = FloatSerializer.Instance.Deserialize(deserializer);
+
+      // Palm Detection
+      result.IsPalmDetectionEnabled = BooleanSerializer.Instance.Deserialize(deserializer);
 
       return result;
     }

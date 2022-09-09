@@ -53,7 +53,7 @@ namespace Niantic.ARDK.VirtualStudio.AR.Mock
 
       arSession.AddMap(serialMap);
 
-      _player = _VirtualStudioManager.Instance.LocalPlayer;
+      _player = _VirtualStudioSessionsManager.Instance.LocalPlayer;
       var networking = _player.Networking;
       var isHost = networking.Self.Equals(networking.Host);
 

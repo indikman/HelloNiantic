@@ -9,9 +9,9 @@ using Niantic.ARDK.AR;
 using Niantic.ARDK.AR.Awareness;
 using Niantic.ARDK.AR.Awareness.Semantics;
 using Niantic.ARDK.AR.Configuration;
-using Niantic.ARDK.Internals.EditorUtilities;
 using Niantic.ARDK.Rendering;
 using Niantic.ARDK.Utilities;
+using Niantic.ARDK.Utilities.Editor;
 using Niantic.ARDK.Utilities.Logging;
 
 using UnityEngine;

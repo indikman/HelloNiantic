@@ -366,6 +366,11 @@ namespace Niantic.ARDK.Extensions.Meshing
       RaiseConfigurationChanged();
     }
 
+    public void SetRendererEnabled(bool isEnabled)
+    {
+       _generator?.SetRendererEnabled(isEnabled);
+    }
+
     // Callback on the ARSession.Mesh.MeshBlocksUpdated event.
     // Generates new Unity meshes if required.
     private void OnMeshUpdated(MeshBlocksUpdatedArgs args)

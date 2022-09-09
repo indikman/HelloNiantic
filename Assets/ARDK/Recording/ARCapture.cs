@@ -32,7 +32,6 @@ namespace Niantic.ARDK.Recording
       unsafe
       {
         var stageIdentifierBytes = stageIdentifier.ToByteArray();
-
         fixed (byte* stageIdentifierPtr = stageIdentifierBytes)
         {
           var nativePtr = PInvoke.Ctor(stageIdentifierPtr);

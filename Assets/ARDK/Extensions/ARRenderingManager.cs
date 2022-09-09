@@ -3,9 +3,9 @@ using System;
 
 using Niantic.ARDK.AR;
 using Niantic.ARDK.AR.ARSessionEventArgs;
-using Niantic.ARDK.Internals.EditorUtilities;
 using Niantic.ARDK.Rendering;
 using Niantic.ARDK.Utilities;
+using Niantic.ARDK.Utilities.Editor;
 using Niantic.ARDK.Utilities.Logging;
 using Niantic.ARDK.VirtualStudio.AR.Mock;
 
@@ -27,6 +27,14 @@ namespace Niantic.ARDK.Extensions
 
     [SerializeField]
     private RenderTexture _targetTexture = null;
+
+    [SerializeField]
+    [HideInInspector]
+    private float _nearClippingPlane = 0.1f;
+
+    [SerializeField]
+    [HideInInspector]
+    private float _farClippingPlane = 100.0f;
 
     /// Event for when the underlying frame renderer initialized.
     public event ArdkEventHandler<FrameRenderedArgs> RendererInitialized;
@@ -162,7 +170,6 @@ namespace Niantic.ARDK.Extensions
 
       if (_camera != null)
       {
-
 #if UNITY_EDITOR
         // Attempt to disable the layer all mock objects are on so "real" objects aren't doubly rendered
         // by the mock device camera and the scene camera.
@@ -324,7 +331,10 @@ namespace Niantic.ARDK.Extensions
         // Allocate a new render texture
         _targetTexture = new RenderTexture(Screen.width, Screen.height, depth: 24)
         {
-          useMipMap = false, autoGenerateMips = false, filterMode = FilterMode.Point, anisoLevel = 0
+          useMipMap = false,
+          autoGenerateMips = false,
+          filterMode = FilterMode.Point,
+          anisoLevel = 0
         };
 
         _targetTexture.Create();
@@ -337,13 +347,17 @@ namespace Niantic.ARDK.Extensions
         ? new RenderTarget(_targetTexture)
         : new RenderTarget(_camera);
 
-      ARFrameRenderer result;
-      var nearClippingPlane = _camera.nearClipPlane;
-      var farClippingPlane = _camera.farClipPlane;
-      if (((_IARSession) _session).IsPlayback)
-        result = ARFrameRendererFactory._CreatePlayback(renderTarget, nearClippingPlane, farClippingPlane);
-      else
-        result = ARFrameRendererFactory.Create(renderTarget, environment, nearClippingPlane, farClippingPlane);
+      var nearClippingPlane = isOffscreen ? _nearClippingPlane : _camera.nearClipPlane;
+      var farClippingPlane = isOffscreen ? _farClippingPlane : _camera.farClipPlane;
+
+      ARFrameRenderer result =
+        ARFrameRendererFactory.Create
+        (
+          renderTarget,
+          environment,
+          nearClippingPlane,
+          farClippingPlane
+        );
 
       if (result != null)
         result.IsOrientationLocked = false;

@@ -5,21 +5,29 @@ namespace Niantic.ARDK.VPSCoverage
   /// Status of a response from the VPS Coverage server.
   public enum ResponseStatus
   {
-    // From API
+    // From UnityWebRequest.Result
+    /// Could not reach the server 
+    ConnectionError,
+    ProtocolError, // all 4xx and 5xx => see Gateway
+    
+    // From API Gateway
+    /// No API key specified
+    ApiKeyMissing = 400,
+    
+    /// API key is not valid
+    Forbidden = 403,
+    
+    /// Too many requests in a short time triggered Rate Limiting
+    TooManyRequests = 429,
+    InternalGatewayError = 500,
+    
+    // From VPS Coverage backend API
     Unset,
     Success,
     InvalidRequest,
     InternalError,
-    TooManyEntitiesRequested,
-
-    // From UnityWebRequest.Result
-    ConnectionError,
-    ProtocolError, // all 4xx and 5xx => see Gateway
-
-    // From Gateway
-    Forbidden = 403,
-    TooManyRequests = 429,
-    InternalGatewayError = 500
-
+    
+    /// Over 100 localization targets requested in single request
+    TooManyEntitiesRequested
   }
 }

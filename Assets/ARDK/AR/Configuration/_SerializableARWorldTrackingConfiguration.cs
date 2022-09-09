@@ -56,6 +56,8 @@ namespace Niantic.ARDK.AR.Configuration
       }
     }
 
+    public bool IsPalmDetectionEnabled { get; set; }
+
     private float _meshingRadius;
 
     private IReadOnlyCollection<IARReferenceImage> _detectionImages =
@@ -104,6 +106,8 @@ namespace Niantic.ARDK.AR.Configuration
       worldTarget.MeshingTargetFrameRate = MeshingTargetFrameRate;
       worldTarget.MeshingTargetBlockSize = MeshingTargetBlockSize;
       worldTarget.MeshingRadius = MeshingRadius;
+
+      worldTarget.IsPalmDetectionEnabled = IsPalmDetectionEnabled;
 
       // Not copying DetectionImages because ARReferenceImage is not supported in Editor.
     }

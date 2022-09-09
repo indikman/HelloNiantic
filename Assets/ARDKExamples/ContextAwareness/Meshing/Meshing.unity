@@ -3411,6 +3411,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7963815754292762357, guid: 9f82ecc5afc3c4c2695d9cf37d46f25c,
         type: 3}
+      propertyPath: _targetBlockSize
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7963815754292762357, guid: 9f82ecc5afc3c4c2695d9cf37d46f25c,
+        type: 3}
       propertyPath: _targetFrameRate
       value: 15
       objectReference: {fileID: 0}

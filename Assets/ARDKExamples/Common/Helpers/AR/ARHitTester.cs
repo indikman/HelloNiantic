@@ -3,13 +3,11 @@
 using System.Collections.Generic;
 
 using Niantic.ARDK.AR;
-using Niantic.ARDK.AR.Anchors;
 using Niantic.ARDK.AR.ARSessionEventArgs;
 using Niantic.ARDK.AR.HitTest;
 using Niantic.ARDK.External;
 using Niantic.ARDK.Utilities;
 using Niantic.ARDK.Utilities.Input.Legacy;
-using Niantic.ARDK.Utilities.Logging;
 
 using UnityEngine;
 
@@ -38,7 +36,7 @@ namespace Niantic.ARDKExamples.Helpers
 
     /// Internal reference to the session, used to get the current frame to hit test against.
     private IARSession _session;
-
+    
     private void Start()
     {
       ARSessionFactory.SessionInitialized += OnAnyARSessionDidInitialize;
@@ -121,7 +119,7 @@ namespace Niantic.ARDKExamples.Helpers
       var hitPosition = result.WorldTransform.ToPosition();
 
       _placedObjects.Add(Instantiate(PlacementObjectPf, hitPosition, Quaternion.identity));
-
+      
       var anchor = result.Anchor;
       Debug.LogFormat
       (

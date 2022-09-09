@@ -1,10 +1,11 @@
-// Copyright 2022 Niantic, Inc. All Rights Reserved.
+﻿// Copyright 2022 Niantic, Inc. All Rights Reserved.
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 using Niantic.ARDK.AR;
 using Niantic.ARDK.AR.Camera;
+using Niantic.ARDK.VirtualStudio.AR;
 
 using UnityEngine;
 
@@ -93,13 +94,7 @@ namespace Niantic.ARDK.Utilities
       ScreenOrientation orientation
     )
     {
-#if UNITY_EDITOR
-      var currentOrientation = Screen.width > Screen.height
-        ? ScreenOrientation.LandscapeLeft
-        : ScreenOrientation.Portrait;
-#else
-      var currentOrientation = Screen.orientation;
-#endif
+      var currentOrientation = CalculateScreenOrientation();
 
       // Get the view matrix for the current orientation in nar convention
       var viewMatrixForCurrentOrientation = camera.GetViewMatrix(currentOrientation);
@@ -123,13 +118,7 @@ namespace Niantic.ARDK.Utilities
       ScreenOrientation orientation
     )
     {
-#if UNITY_EDITOR
-      var currentOrientation = Screen.width > Screen.height
-        ? ScreenOrientation.LandscapeLeft
-        : ScreenOrientation.Portrait;
-#else
-      var currentOrientation = Screen.orientation;
-#endif
+      var currentOrientation = CalculateScreenOrientation();
 
       // Get the view matrix for the current orientation in Unity convention
       var viewMatrixForCurrentOrientation = camera.worldToCameraMatrix;
@@ -156,13 +145,7 @@ namespace Niantic.ARDK.Utilities
       ScreenOrientation orientation
     )
     {
-#if UNITY_EDITOR
-      var currentOrientation = Screen.width > Screen.height
-        ? ScreenOrientation.LandscapeLeft
-        : ScreenOrientation.Portrait;
-#else
-      var currentOrientation = Screen.orientation;
-#endif
+      var currentOrientation = CalculateScreenOrientation();
 
       // Get the view matrix for the current orientation in nar convention
       var viewMatrixForCurrentOrientation = camera.GetViewMatrix(currentOrientation);
@@ -291,7 +274,7 @@ namespace Niantic.ARDK.Utilities
       // Calculate scaling
       var scale = viewportHeightLandscape / (viewportWidthLandscape / imageWidth * imageHeight);
 
-      // Calculate the cropped resolution of the image in landscapess
+      // Calculate the cropped resolution of the image in landscapes
       var croppedFrame = new Vector2
       (
         // The image fills the longer axis of the viewport
@@ -315,11 +298,7 @@ namespace Niantic.ARDK.Utilities
       );
 
       // Rotate the image origin to the specified orientation
-#if UNITY_2021_3_OR_NEWER
       origin = RotateVector(origin, (float)GetAngle(viewportOrientation, ScreenOrientation.LandscapeLeft));
-#else
-      origin = RotateVector(origin, (float)GetAngle(viewportOrientation, ScreenOrientation.Landscape));
-#endif
 
       // Fx and Fy are identical for square pixels
       var focalLength = intrinsics.FocalLength.x;
@@ -490,19 +469,6 @@ namespace Niantic.ARDK.Utilities
     );
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Matrix4x4 AffineInvertVertical()
-    {
-      return _affineInvertVerticalMatrix;
-    }
-    private static readonly Matrix4x4 _affineInvertVerticalMatrix = new Matrix4x4
-    (
-      new Vector4(1, 0, 0, 0),
-      new Vector4(0, -1, 0, 0),
-      new Vector4(0, 0, 1, 0),
-      new Vector4(0, 1, 0, 1)
-    );
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Matrix4x4 AffineScale(Vector2 scale)
     {
       return new Matrix4x4
@@ -513,6 +479,19 @@ namespace Niantic.ARDK.Utilities
         new Vector4(0, 0, 0, 1)
       );
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Matrix4x4 AffineInvertVertical()
+    {
+      return _affineInvertVerticalMatrix;
+    }
+    private static readonly Matrix4x4 _affineInvertVerticalMatrix = new Matrix4x4
+    (
+      new Vector4(1, 0, 0, 0),
+      new Vector4(0, -1, 0, 0),
+      new Vector4(0, 0, 1, 0),
+      new Vector4(0, 1, 0, 1)
+    );
 
     internal static Resolution CalculateDisplayFrame
     (
@@ -567,9 +546,26 @@ namespace Niantic.ARDK.Utilities
 
     /// Calculates an affine rotation matrix that transforms
     /// an image from one screen orientation to another.
-    internal static Matrix4x4 CalculateScreenRotation(ScreenOrientation from, ScreenOrientation to)
+    internal static Matrix4x4 CalculateScreenRotationMatrix(ScreenOrientation from, ScreenOrientation to)
     {
       return AffineRotation(GetAngle(from, to));
+    }
+
+    internal static ScreenOrientation CalculateScreenOrientation()
+    {
+#if UNITY_EDITOR
+  #if ARDK_TEST
+        return Screen.width > Screen.height
+            ? ScreenOrientation.LandscapeLeft
+            : ScreenOrientation.Portrait;
+  #else
+        return _MockCameraConfiguration.CorrectedScreenWidth > _MockCameraConfiguration.CorrectedScreenHeight
+          ? ScreenOrientation.LandscapeLeft
+          : ScreenOrientation.Portrait;
+  #endif
+#else
+      return Screen.orientation;
+#endif
     }
 
     /// Transforms a viewport coordinate to world space.

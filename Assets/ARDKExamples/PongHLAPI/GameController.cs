@@ -384,7 +384,7 @@ namespace Niantic.ARDKExamples.PongHLAPI
           if (_gameStart)
             _ball = FindObjectOfType<BallBehaviour>().gameObject;
         };
-
+#pragma warning disable 0618
       _hitStreamReplicator =
         new MessageStreamReplicator<Vector3>
         (
@@ -392,7 +392,7 @@ namespace Niantic.ARDKExamples.PongHLAPI
           _arNetworking.Networking.AnyToAnyDescriptor(TransportType.ReliableOrdered),
           group
         );
-
+#pragma warning restore 0618
       _hitStreamReplicator.MessageReceived +=
         (args) =>
         {

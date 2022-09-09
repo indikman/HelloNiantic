@@ -19,7 +19,6 @@ namespace Niantic.ARDK.AR.Awareness.Semantics
     _SerializableAwarenessBufferBase<UInt32>,
     ISemanticBuffer
   {
-    private static bool _hasWarnedAboutInterpolation;
     private bool[] _hasChannelCache;
 
     internal _SerializableSemanticBuffer
